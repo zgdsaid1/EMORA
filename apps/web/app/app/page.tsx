@@ -3,6 +3,7 @@ import { headers } from 'next/headers';
 
 import { LatestStatePanel } from '../latest-state-panel';
 import { LogoutButton } from '../logout-button';
+import { ProfileOnboardingForm } from '../profile-onboarding-form';
 import { TransitionForm } from '../transition-form';
 import {
   discoverAuthorizedProfiles,
@@ -103,9 +104,9 @@ export default async function ProtectedAppPage({
             <h2>Profiles</h2>
             {profiles.length === 0 ? (
               <p>
-                No profile record is available in this project yet. Profiles
-                are created through the profile creation API and are
-                model-configuration records used for computation.
+                No profile record is available in this project yet. Create one
+                below. Profiles are model-configuration records used for
+                computation.
               </p>
             ) : (
               <ul>
@@ -130,6 +131,9 @@ export default async function ProtectedAppPage({
             <aside role="note" aria-label="Profile identity disclosure">
               <p>{PROFILE_IDENTITY_DISCLOSURE}</p>
             </aside>
+            {/* A2: project-scoped profile onboarding over the existing
+                creation contract (server remains authoritative). */}
+            {project && <ProfileOnboardingForm projectId={project.projectId} />}
           </section>
 
           {profile && project ? (
