@@ -142,6 +142,36 @@ is a read: it never writes product state and never mutates history.
   recorded. Failed requests (401, 403, 404, 500) create no audit rows and use
   structured operational logging only.
 
+### GET /api/v1/projects/[projectId]/profiles/[profileId]/states
+
+Returns a bounded newest-first history of computational, model-estimated
+emotional states for exactly the authorized `(projectId, profileId)` pair.
+
+- **Authorization:** authenticated session; `VIEWER` minimum via
+  `requireProjectAccess`. Organization identity is derived from the authorized
+  project. No separate profile lookup is performed; a profile with no
+  accessible states returns an empty list.
+- **Query:** optional integer `limit`, default `10`, maximum `50`. Values below
+  `1`, above `50`, or not representing an integer return `invalid_input`
+  (400). Results are ordered by `timestamp DESC, createdAt DESC, id DESC`.
+- **Success (200):** `requestId`, canonical `disclosure` and `disclosureText`,
+  and `states`. Each state contains `stateId`, `timestamp`, `emotionVector`,
+  `dimensions` (`valence`, `arousal`, `intensity`), `modelIdentity`
+  (`modelVersionId`, `name`, `version`, `providerIdentifier`,
+  `providerVersion`), `parameterIdentity`, and `initialized`.
+- **Empty result:** `200` with `"states": []`.
+- **Data exposure:** `confidence`, raw persisted state JSON, diagnostics,
+  project/profile identifiers per item, and other internal database fields are
+  excluded. Every returned state is domain-validated; invalid persisted data
+  fails the entire read with `state_data_invalid` (500).
+- **Audit:** each successful read writes exactly one `emotional_state.history_read`
+  audit row (`resourceType: emotional_state`, no `resourceId`), with metadata
+  limited to `projectId`, `profileId`, `requestId`, and `outcome`. Audit failure
+  fails closed with `internal_error` (500); 400, 401, and 403 responses are not
+  audited.
+- **Errors:** `invalid_input` (400), `unauthenticated` (401), `forbidden` (403),
+  `state_data_invalid` (500), `internal_error` (500).
+
 ## Response fields that are never exposed
 
 No endpoint returns `confidence`, `confidenceAdjustment`, raw persisted
@@ -151,8 +181,8 @@ ranking, winner, threshold, composite score, or superiority/comparison measure.
 
 ## Scientific disclosure
 
-The transition and latest-state endpoints return `disclosure` (code) and
-`disclosureText` from the single
+The transition, latest-state, and bounded state-history endpoints return
+`disclosure` (code) and `disclosureText` from the single
 frozen constant `SCIENTIFIC_DISCLOSURE_TEXT`, which is byte-identical in the
 API and the UI. The wording is:
 
@@ -173,8 +203,8 @@ and human behavioral evaluation remain separate.
 
 ## Out of scope (deliberately not implemented)
 
-- State-history listing, pagination, cursors, aggregation, comparison, or
-  metric-based multi-profile sorting.
+- Pagination, cursors, aggregation, comparison, or metric-based multi-profile
+  sorting.
 - Ranking, dominant emotion, thresholds, composite scores, or any
   superiority/comparison metric.
 - ML runtime, hybrid fusion, learned parameters, memory retrieval, RAG,
