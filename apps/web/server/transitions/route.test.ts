@@ -30,6 +30,10 @@ vi.mock('./service', () => ({
   requestDigest: () => 'digest',
 }));
 
+vi.mock('./history/service', () => ({
+  readTransitionHistory: vi.fn(),
+}));
+
 const { POST } =
   await import('../../app/api/v1/projects/[projectId]/profiles/[profileId]/transitions/route');
 
