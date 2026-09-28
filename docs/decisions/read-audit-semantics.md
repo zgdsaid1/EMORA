@@ -110,3 +110,180 @@ It does NOT define:
 - product ranking or thresholds.
 
 Any future change requires a new explicit decision.
+
+---
+
+# Decision: Bounded Historical-Read Governance (Future Read Surfaces)
+
+- **Status:** Accepted — governing policy for bounded historical reads.
+  Accepting this policy does NOT mean either endpoint is implemented; neither
+  endpoint exists until a future implementation slice creates it.
+- **Date:** 2026-09-28
+- **Applies to (future endpoints only):**
+  - Bounded Transition History:
+    `GET /api/v1/projects/{projectId}/profiles/{profileId}/transitions?limit=N`
+  - Bounded State Timeline:
+    `GET /api/v1/projects/{projectId}/profiles/{profileId}/states?limit=N`
+- **Record type:** Durable repository decision record. Extension of this file;
+  the Slice 2 latest-state decision above is preserved verbatim and remains
+  authoritative for `GET .../states/latest`.
+
+## Context
+
+The Slice 2 read-audit decision above deliberately scoped itself to the
+latest-state read and did not define history or pagination endpoints. Before
+any bounded historical-read surface is implemented, a single reusable policy
+must govern both future surfaces so they do not diverge. This section records
+that policy. Recording it does not implement anything.
+
+## Final decision
+
+### Authorization
+
+- `requireAuth` runs first; a missing or invalid session yields 401
+  `unauthenticated`.
+- Project access uses the existing mechanism:
+  `requireProjectAccess(userId, projectId, 'VIEWER')`; failure yields 403
+  `forbidden`.
+- The organization is always derived server-side from the authorized project.
+- No client-supplied organization may establish authorization.
+
+### Profile/project isolation
+
+- All reads are constrained to the authorized `(projectId, profileId)` pair.
+- No cross-project reads.
+- An inaccessible or nonexistent profile must not create an existence oracle.
+- After successful project authorization, a profile with no accessible rows
+  may return HTTP 200 with an empty list.
+
+### Limit
+
+- Optional integer query parameter: `limit`.
+- Default: 10.
+- Maximum: 50.
+- Values below 1, above 50, or non-integer values return 400 `invalid_input`.
+
+### Ordering
+
+- Most recent first.
+- Deterministic ordering: `timestamp DESC, createdAt DESC, id DESC`.
+
+### Pagination
+
+- Cursor pagination and page-based pagination are OUT OF SCOPE.
+- Only the most recent N records are returned.
+
+### Audit
+
+- Every successful bounded historical read produces exactly ONE audit event
+  for the request, not one event per returned item.
+- Transition History:
+  - `action = emotional_event.history_read`
+  - `resourceType = emotional_event`
+  - `resourceId` omitted.
+- State Timeline:
+  - `action = emotional_state.history_read`
+  - `resourceType = emotional_state`
+  - `resourceId` omitted.
+- Audit metadata allow-list: `projectId`, `profileId`, `requestId`, `outcome`.
+- Do not include returned data, item IDs, counts, raw JSON, metadata, context,
+  confidence, `idempotencyKey`, `requestHash`, or other internal fields in
+  audit metadata.
+- Audit failure is fail-closed: return 500 `internal_error` and never return an
+  unaudited successful response.
+- 401, 403, and 400 responses do not create audit events.
+
+### Errors
+
+- Reuse the existing frozen error-envelope conventions.
+- 401 `unauthenticated`.
+- 403 `forbidden`.
+- 400 `invalid_input`.
+- 500 `internal_error`.
+- For State Timeline, domain-invalid persisted state data must fail the whole
+  request with the existing `state_data_invalid` behavior; corrupt rows must
+  never be silently skipped.
+
+### Disclosure
+
+- Both future historical-read response bodies must carry the existing canonical
+  `SCIENTIFIC_DISCLOSURE_CODE` and `SCIENTIFIC_DISCLOSURE_TEXT`.
+- UI surfaces must render the existing persistent, non-dismissible scientific
+  disclosure.
+- Never present computational/model-estimated state as a measurement or
+  detection of a person's true emotion.
+- No psychological, clinical, diagnostic, or human-validity implication may be
+  introduced.
+
+### Data exposure
+
+#### Transition History may expose only
+
+- `eventId`
+- `timestamp`
+- `source`
+- `valence`
+- `intensity`
+- `relevance`
+- `surprise`
+- `uncertainty`
+
+#### Transition History must NOT expose
+
+- `context`
+- `metadata`
+- `idempotencyKey`
+- `requestHash`
+- raw JSONB / internal fields
+
+#### State Timeline may expose only the existing latest-state per-row public shape
+
+- `stateId`
+- `timestamp` (the existing latest-state shape field name)
+- `emotionVector`
+- `dimensions`: valence, arousal, intensity
+- `modelIdentity`
+- `parameterIdentity`
+- `initialized`
+
+#### State Timeline must NOT expose
+
+- `confidence`
+- raw `state` JSONB
+- internal diagnostics
+
+### Out of scope
+
+- Pagination/cursors.
+- Aggregation.
+- Comparison.
+- Ranking.
+- Multi-profile sorting.
+- Dominant-emotion calculations.
+- Thresholds/composite scores.
+- Profile lifecycle.
+- Database schema changes.
+- ML.
+- Equation changes.
+- `DeterministicEmotionalDynamicsProvider` changes.
+- Evaluation-runtime coupling.
+- Webhooks.
+- Rate limiting.
+
+### Scientific governance
+
+- This decision does not authorize any mathematical/equation change.
+- No `DeterministicEmotionalDynamicsProvider` change is permitted under this
+  decision.
+- Any future equation change still requires the Mathematical Decision Register
+  (`docs/mathematical-decision-register.md`).
+- Synthetic Evaluation and Human Behavioral Evaluation remain separate.
+
+### Documentation scope
+
+- This decision modifies only this file
+  (`docs/decisions/read-audit-semantics.md`).
+- `docs/api.md` is NOT modified by this decision; it will be updated only when
+  an endpoint is actually implemented.
+- Neither endpoint is implemented by this decision.
+- No tests for the future endpoints are added by this decision.
