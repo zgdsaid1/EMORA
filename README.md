@@ -59,3 +59,7 @@ Copy `.env.example` to a local environment file when future phases need configur
 ## Roadmap
 
 Phase 1 establishes the monorepo, developer environment, package boundaries, and domain contracts. Future phases may add typed configuration, persistence, authentication, versioned APIs, psychological equations, ML providers, hybrid fusion, and product workflows in that order of responsibility. See `docs/` for the current boundaries and limitations.
+
+## Governance
+
+For the governing development methodology and architectural decision framework, see [`docs/architecture/development-methodology.md`](docs/architecture/development-methodology.md).
