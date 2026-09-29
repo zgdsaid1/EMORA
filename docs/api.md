@@ -37,6 +37,33 @@ a browser-supplied organization is never trusted.
 - **Empty result:** `200` with `"projects": []`.
 - **Errors:** `unauthenticated` (401), `internal_error` (500).
 
+### POST /api/v1/bootstrap
+
+Creates the first organization, its initial project, and an `OWNER` membership
+for the authenticated user when that user has no authorized projects. The
+organization and project are created by this request; an existing organization
+cannot be selected or joined through bootstrap.
+
+- **Authorization:** authenticated Better Auth session. User identity and owner
+  role are derived server-side.
+- **Body (strict JSON):** `organizationName`, `organizationSlug`, `projectName`,
+  `projectSlug`. Names are trimmed and must not be empty. Slugs must match
+  `^[a-z0-9]+(?:-[a-z0-9]+)*$`; slugs are not generated or transformed.
+- **Success (201):** `requestId`, `organizationId`, `organizationName`,
+  `organizationSlug`, `projectId`, `projectName`, `projectSlug`. The created
+  project then appears through the existing `GET /api/v1/projects` discovery.
+- **Conflict (409):** `bootstrap_already_initialized` when the user already has
+  an authorized project; `bootstrap_slug_conflict` when either slug conflicts.
+- **Atomicity and audit:** organization, project, `OWNER` membership, and one
+  `organization.bootstrapped` audit row (`resourceType: organization`,
+  `resourceId` set to the new organization ID) are written in a single
+  transaction. Audit metadata contains `projectId`, `organizationMemberId`,
+  `role: OWNER`, `requestId`, and `outcome: succeeded`. Any insertion or audit
+  failure rolls back the entire bootstrap.
+- **Errors:** `unauthenticated` (401), `invalid_input` (400),
+  `invalid_content_type` (400), `bootstrap_already_initialized` (409),
+  `bootstrap_slug_conflict` (409), `internal_error` (500).
+
 ### GET /api/v1/projects/[projectId]/profiles
 
 Lists the profiles of exactly one project.

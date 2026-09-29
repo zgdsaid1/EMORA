@@ -5,6 +5,7 @@ import { LatestStatePanel } from '../latest-state-panel';
 import { LogoutButton } from '../logout-button';
 import { ProfileOnboardingForm } from '../profile-onboarding-form';
 import { TransitionForm } from '../transition-form';
+import { BootstrapForm } from '../bootstrap-form';
 import {
   discoverAuthorizedProfiles,
   discoverAuthorizedProjects,
@@ -73,10 +74,11 @@ export default async function ProtectedAppPage({
           <h2>No authorized project is available</h2>
           <p>
             This workspace has no project that your account may use. Any
-            organization, project, or profile provisioning is intentionally
-            outside this slice; the development fixture is provisioned
-            automatically outside production builds.
+            organization and initial project created here will be owned by your
+            account. Existing organizations are not available through this
+            bootstrap.
           </p>
+          <BootstrapForm />
         </section>
       ) : (
         <>

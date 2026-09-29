@@ -189,3 +189,36 @@ describe('A2 workspace integration', () => {
     expect(pageSource).toContain('projectId={project.projectId}');
   });
 });
+
+describe('first-user bootstrap form', () => {
+  it('collects explicit names and slugs and posts only the bootstrap contract', () => {
+    const bootstrapSource = readFileSync(
+      fileURLToPath(new URL('./bootstrap-form.tsx', import.meta.url)),
+      'utf8',
+    );
+    for (const name of [
+      'organizationName',
+      'organizationSlug',
+      'projectName',
+      'projectSlug',
+    ]) {
+      expect(bootstrapSource).toContain(`name="${name}"`);
+    }
+    expect(bootstrapSource).toContain("fetch('/api/v1/bootstrap'");
+    expect(bootstrapSource).toContain("method: 'POST'");
+    expect(bootstrapSource).toContain("window.location.assign('/app')");
+    const payloadStart = bootstrapSource.indexOf('const payload = {');
+    const payloadEnd = bootstrapSource.indexOf('\n    };', payloadStart);
+    expect(payloadStart).toBeGreaterThanOrEqual(0);
+    expect(payloadEnd).toBeGreaterThan(payloadStart);
+    const payload = bootstrapSource.slice(payloadStart, payloadEnd);
+    expect(payload).not.toContain('organizationId');
+    expect(payload).not.toContain('userId');
+    expect(payload).not.toContain('role');
+  });
+
+  it('offers bootstrap only in the no-authorized-project state', () => {
+    expect(pageSource).toContain('<BootstrapForm />');
+    expect(pageSource).toContain('projects.length === 0');
+  });
+});
