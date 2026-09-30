@@ -18,7 +18,6 @@ import {
   SCIENTIFIC_DISCLOSURE_TEXT,
 } from '../disclosure';
 import { TransitionHistoryError } from './errors';
-import { readTransitionHistory } from './service';
 
 /**
  * Slice C1 read-path persistence tests against the real database: exact read
@@ -29,7 +28,11 @@ import { readTransitionHistory } from './service';
  * controlled ordering keys. Controlled test fixtures only.
  *
  * `@emora/auth` (used by the service for `recordAuditEvent`) requires
- * AUTH_SECRET at module load.
+ * AUTH_SECRET at module load, so the service is imported dynamically after the
+ * module-level fallbacks below run — matching the states-integration
+ * convention. A static import would evaluate `@emora/auth` before those
+ * fallbacks (import hoisting) and fail when AUTH_SECRET is absent from the
+ * environment, e.g. under CI's turbo strict env.
  */
 process.env.AUTH_SECRET ??= 'integration-only-secret';
 process.env.BETTER_AUTH_URL ??= 'http://localhost:3000';
@@ -117,7 +120,7 @@ async function seedTransition(scenario: Scenario, at: Date = new Date()) {
   });
 }
 
-function read(
+async function read(
   scenario: Scenario,
   options: {
     organizationId?: string;
@@ -125,6 +128,7 @@ function read(
     limit?: number;
   } = {},
 ) {
+  const { readTransitionHistory } = await import('./service');
   return readTransitionHistory({
     userId: scenario.userId,
     organizationId: options.organizationId ?? scenario.organizationId,
@@ -349,8 +353,14 @@ integration('Slice C1 transition history read persistence', () => {
     const scenario = await createScenario();
     const base = new Date();
     await seedTransition(scenario, base);
-    const second = await seedTransition(scenario, new Date(base.getTime() + 1_000));
-    const third = await seedTransition(scenario, new Date(base.getTime() + 2_000));
+    const second = await seedTransition(
+      scenario,
+      new Date(base.getTime() + 1_000),
+    );
+    const third = await seedTransition(
+      scenario,
+      new Date(base.getTime() + 2_000),
+    );
 
     const result = await read(scenario, { limit: 2 });
     expect(result.body.transitions).toHaveLength(2);
@@ -365,7 +375,9 @@ integration('Slice C1 transition history read persistence', () => {
 
     // scenarioA's project + scenarioB's profile matches nothing and is
     // indistinguishable from "no transitions" (200 empty, not 404).
-    const crossProject = await read(scenarioA, { profileId: scenarioB.profileId });
+    const crossProject = await read(scenarioA, {
+      profileId: scenarioB.profileId,
+    });
     expect(crossProject.status).toBe(200);
     expect(crossProject.body.transitions).toEqual([]);
 
