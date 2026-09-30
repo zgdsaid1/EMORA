@@ -17,6 +17,7 @@ const databaseUrl =
 const authSecret =
   process.env.AUTH_SECRET ?? 'emora-e2e-only-secret-not-for-production-32';
 const betterAuthUrl = process.env.BETTER_AUTH_URL ?? 'http://localhost:3000';
+const captureFailureDiagnostics = process.env.CI === 'true';
 
 export default defineConfig({
   testDir: './tests/e2e',
@@ -28,8 +29,9 @@ export default defineConfig({
   reporter: [['list']],
   use: {
     baseURL,
-    // No trace artifacts: this suite leaves the working tree untouched.
-    trace: 'off',
+    trace: captureFailureDiagnostics ? 'retain-on-failure' : 'off',
+    screenshot: captureFailureDiagnostics ? 'only-on-failure' : 'off',
+    video: captureFailureDiagnostics ? 'retain-on-failure' : 'off',
   },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   webServer: {
