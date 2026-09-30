@@ -143,6 +143,36 @@ result atomically (event, state, and audit rows in a single transaction).
   (409), `concurrency_conflict` (409), `profile_data_invalid` (500),
   `internal_error` (500).
 
+### GET /api/v1/projects/[projectId]/profiles/[profileId]/transitions
+
+Returns a bounded newest-first history of the accepted structured events for
+exactly the authorized `(projectId, profileId)` pair.
+
+- **Authorization:** authenticated session; `VIEWER` minimum via
+  `requireProjectAccess`. Organization identity is derived from the authorized
+  project. No separate profile lookup is performed; a profile with no
+  accessible events returns an empty list (no existence oracle).
+- **Query:** optional integer `limit`, default `10`, maximum `50`. Values below
+  `1`, above `50`, or not representing an integer return `invalid_input`
+  (400). Results are ordered by `timestamp DESC, createdAt DESC, id DESC`.
+- **Success (200):** `requestId`, canonical `disclosure` and `disclosureText`,
+  and `transitions`. Each transition contains `eventId`, `timestamp`, `source`,
+  `valence`, `intensity`, `relevance`, `surprise`, and `uncertainty`.
+- **Empty result:** `200` with `"transitions": []`.
+- **Data exposure:** `projectId`, `profileId`, `context`, `metadata`,
+  `idempotencyKey`, `requestHash`, raw JSONB, and other internal database
+  fields are excluded.
+- **Audit:** each successful read writes exactly one
+  `emotional_event.history_read` audit row (`resourceType: emotional_event`,
+  no `resourceId`), with metadata limited to `projectId`, `profileId`,
+  `requestId`, and `outcome`. Audit failure fails closed with
+  `internal_error` (500); 400, 401, and 403 responses are not audited.
+- **Errors:** `invalid_input` (400), `unauthenticated` (401), `forbidden` (403),
+  `internal_error` (500).
+- **Product surface:** this endpoint is backend-only in the current product
+  slice. No transition-history UI, replay, recomputation, or trajectory
+  surface exists; see `tests/e2e/README.md` for the explicit scope boundary.
+
 ### GET /api/v1/projects/[projectId]/profiles/[profileId]/states/latest
 
 Returns the most recently persisted computational state for the profile. This
