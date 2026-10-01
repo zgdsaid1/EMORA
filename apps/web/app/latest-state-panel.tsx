@@ -6,6 +6,7 @@ import {
   SCIENTIFIC_DISCLOSURE_CODE,
   SCIENTIFIC_DISCLOSURE_TEXT,
 } from '../server/transitions/disclosure';
+import { handleUnauthorizedResponse } from './session-recovery';
 
 /**
  * Slice 2 panel: the most recently persisted computational state for the
@@ -66,6 +67,15 @@ export function LatestStatePanel({
       const response = await fetch(
         `/api/v1/projects/${projectId}/profiles/${profileId}/states/latest`,
       );
+      if (
+        handleUnauthorizedResponse(
+          response.status,
+          `${window.location.pathname}${window.location.search}`,
+          (url) => window.location.assign(url),
+        )
+      ) {
+        return;
+      }
       if (response.status === 404) {
         setState({ kind: 'empty' });
         return;
@@ -136,8 +146,7 @@ export function LatestStatePanel({
             </li>
           </ul>
           <p>
-            <strong>Parameter identity</strong>:{' '}
-            {state.data.parameterIdentity}
+            <strong>Parameter identity</strong>: {state.data.parameterIdentity}
           </p>
           <p>Computed at {state.data.timestamp}</p>
         </div>

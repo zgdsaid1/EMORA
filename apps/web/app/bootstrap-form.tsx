@@ -2,6 +2,8 @@
 
 import { FormEvent, useState } from 'react';
 
+import { handleUnauthorizedResponse } from './session-recovery';
+
 interface BootstrapResponse {
   readonly requestId: string;
   readonly organizationId: string;
@@ -36,9 +38,17 @@ export function BootstrapForm() {
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify(payload),
       });
+      if (
+        handleUnauthorizedResponse(
+          response.status,
+          `${window.location.pathname}${window.location.search}`,
+          (url) => window.location.assign(url),
+        )
+      ) {
+        return;
+      }
       const body = (await response.json()) as
-        | BootstrapResponse
-        | { error?: { message?: string } };
+        BootstrapResponse | { error?: { message?: string } };
 
       if (!response.ok) {
         setError(

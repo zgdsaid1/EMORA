@@ -24,7 +24,10 @@ export function middleware(request: NextRequest) {
   const hasSessionCookie = request.cookies.has(sessionCookieName);
   if (!hasSessionCookie) {
     const loginUrl = new URL('/login', request.url);
-    loginUrl.searchParams.set('callbackUrl', request.nextUrl.pathname);
+    loginUrl.searchParams.set(
+      'callbackUrl',
+      `${request.nextUrl.pathname}${request.nextUrl.search}`,
+    );
     return NextResponse.redirect(loginUrl);
   }
 

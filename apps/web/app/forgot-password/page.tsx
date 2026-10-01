@@ -1,12 +1,16 @@
 import Link from 'next/link';
 
-import { AuthForm } from '../auth-form';
-
 export default function ForgotPasswordPage() {
   return (
-    <>
-      <AuthForm mode="forgot-password" />
-      <p><Link href="/login">Back to login</Link></p>
-    </>
+    <main>
+      <h1>Password reset unavailable</h1>
+      <p>
+        Password reset is currently unavailable because reset email delivery is
+        not configured.
+      </p>
+      <p>
+        <Link href="/login">Return to sign in</Link>
+      </p>
+    </main>
   );
 }

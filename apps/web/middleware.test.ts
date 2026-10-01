@@ -42,6 +42,8 @@ function setNodeEnv(value: 'development' | 'production' | 'test'): void {
 }
 
 const originalNodeEnv = process.env.NODE_ENV;
+const PROJECT_ID = '11111111-1111-4111-8111-111111111111';
+const PROFILE_ID = '22222222-2222-4222-8222-222222222222';
 
 afterAll(() => {
   setNodeEnv(originalNodeEnv);
@@ -117,4 +119,40 @@ describe('middleware session-cookie recognition', () => {
       expect(redirectLocation(response)).toBeNull();
     }
   });
+
+  it('keeps login reachable when an expired session cookie is still present', async () => {
+    setNodeEnv('production');
+    vi.resetModules();
+    const { middleware } = await import('./middleware');
+
+    const response = middleware(
+      requestWithCookie(
+        '/login?callbackUrl=%2Fapp',
+        '__Secure-emora.session_token',
+      ),
+    );
+    expect(response.status).toBe(200);
+    expect(redirectLocation(response)).toBeNull();
+  });
+
+  it.each(['production', 'development'] as const)(
+    'preserves the full path and query in callbackUrl when redirecting from /app with no session cookie (%s)',
+    async (nodeEnv) => {
+      setNodeEnv(nodeEnv);
+      vi.resetModules();
+      const { middleware } = await import('./middleware');
+
+      const response = middleware(
+        requestWithCookie(
+          `/app?projectId=${PROJECT_ID}&profileId=${PROFILE_ID}`,
+        ),
+      );
+      expect(response.status).toBe(307);
+      expect(redirectLocation(response)).toBe(
+        `http://localhost:3000/login?callbackUrl=${encodeURIComponent(
+          `/app?projectId=${PROJECT_ID}&profileId=${PROFILE_ID}`,
+        )}`,
+      );
+    },
+  );
 });
