@@ -3,7 +3,7 @@
 Phase 3 separates authentication from authorization:
 
 - **Authentication** is handled by Better Auth in `packages/auth`. It identifies a user with email/password and stores secure server-side sessions in PostgreSQL. `AUTH_SECRET` is required at startup and is never imported by client code.
-- **Authorization** is handled by server utilities in `packages/auth/src/authorization.ts`. Every organization or project operation checks the authenticated user, membership, role, and project ownership. A browser-supplied organization ID is only an input to a membership query, never proof of access.
+- **Authorization** is handled by server utilities in `packages/auth/src/authorization.ts`. Operations on existing organization or project resources check the authenticated user, membership, role, and project ownership. The first-user bootstrap is an exception: it requires an authenticated user, verifies that the user has no authorized project, then creates the first organization, project, and `OWNER` membership transactionally. A browser-supplied organization ID is only an input to a membership query, never proof of access.
 
 ## Identity and sessions
 

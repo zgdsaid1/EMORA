@@ -1,16 +1,19 @@
 # API
 
-Next.js Route Handlers are the REST API boundary. All endpoints are versioned
-under `/api/v1`, run on the Node.js runtime (`force-dynamic`), and share one
+Next.js Route Handlers are the REST API boundary. All product endpoints
+documented here are versioned under `/api/v1`, run on the Node.js runtime (`force-dynamic`), and share one
 frozen error envelope: `{ "error": { "code", "message", "requestId" } }` with a
 fixed safe message per code — internal errors, SQL, stack traces, and payload
 content are never returned.
 
 ## Authentication
 
-Every endpoint requires a server-side Better Auth session (HTTP-only cookie).
-Session identity is always derived server-side via `requireAuth`; no caller can
-assert an identity or an organization through the request.
+Every `/api/v1` endpoint requires a server-side Better Auth session (HTTP-only
+cookie). Session identity is always derived server-side via `requireAuth`; no
+caller can assert an identity or an organization through the request.
+
+The Better Auth adapter is separate from `/api/v1` and is mounted at
+`/api/auth/[...all]` for GET and POST requests.
 
 ## Authorization
 
@@ -229,6 +232,10 @@ emotional states for exactly the authorized `(projectId, profileId)` pair.
 - **Errors:** `invalid_input` (400), `unauthenticated` (401), `forbidden` (403),
   `state_data_invalid` (500), `internal_error` (500).
 
+The bounded transition-history and state-history endpoints above are
+implemented. `docs/decisions/read-audit-semantics.md` retains its original
+historical wording that described these surfaces as future endpoints.
+
 ## Response fields that are never exposed
 
 No endpoint returns `confidence`, `confidenceAdjustment`, raw persisted
@@ -269,8 +276,13 @@ and human behavioral evaluation remain separate.
 - API-key issuance or programmatic third-party access (the `api_keys` table is
   schema foundation only).
 - Parameter-version HTTP surface, profile update/deletion, project and
-  organization administration (create/update/delete), webhooks, rate limiting,
-  and evaluation-runtime coupling.
+  organization administration (create/update/delete), webhooks,
+  application-level rate limiting for `/api/v1`, and evaluation-runtime
+  coupling.
+
+The application does not configure a rate limiter for `/api/v1` routes. The
+separate Better Auth handler uses Better Auth's default rate limiter in
+production.
 
 See `docs/security.md` for the authorization model, `docs/privacy.md` for data
 handling boundaries, and `docs/evaluation.md` for the evaluation boundary.

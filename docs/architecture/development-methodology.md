@@ -357,18 +357,22 @@ Validation is not claimed complete unless repository evidence proves it.
 
 ## 22. Current State Snapshot
 
-_Snapshot — update when the repository state materially changes._
+_Snapshot — as of 2026-10-01; update when the repository state materially changes._
 
-- **Branch/HEAD:** `main` @ `b1a9fcf` (as inspected at document creation).
-- **Product maturity:** functional authenticated journey (auth, bootstrap,
-  profiles, transitions, latest state, bounded histories, disclosure); no SaaS
-  operations; no ML output.
-- **Deterministic core:** active; MDR-001…MDR-008 `RETAIN`, MDR-009 `DEFER`.
+- **Branch/HEAD:** `main` @ `a2971eb` (origin/main at this snapshot date).
+- **Product maturity:** authenticated product journey with PostgreSQL persistence,
+  bootstrap, profiles, deterministic transitions, latest state, bounded
+  histories, and scientific disclosure; required Product Reality E2E CI passes.
+  No SaaS operations and no ML output.
+- **Deterministic core:** active; exact-output regression tests and `MODEL_SPEC.md`
+  are present; MDR-001…MDR-008 `RETAIN`, MDR-009 `DEFER`.
 - **T-ML:** DORMANT — NOT ACTIVATABLE.
-- **T-Memory:** DORMANT (schema foundation only; no runtime).
+- **T-Memory:** DORMANT as a product input; deterministic memory influence
+  exists in the core, but the product transition passes `memories: []` and does
+  not load memories from the database.
 - **T-RAG:** DORMANT (no implementation).
 - **T-SaaS:** DORMANT (foundation tables only; no product demand).
-- **Current objective:** Product Reality Validation.
+- **Current objective:** Product Reality Validation (G3) is closed; the next product slice is selected through the Product/Core Decision and the activation-case process (Sections 5 and 23). This snapshot is a documentation-only synchronization.
 
 ## 23. Decision Rules for Future Proposals
 
