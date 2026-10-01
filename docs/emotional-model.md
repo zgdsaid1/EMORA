@@ -12,15 +12,15 @@ not a claim that these dimensions form a universal psychological taxonomy. Each
 dimension below separates a broad theoretical anchor from EMORA's engineering
 operationalization; none is presented as an empirically validated law.
 
-| Dimension | Theoretical anchor | EMORA operationalization | Limitation / non-claim |
-| --- | --- | --- | --- |
-| `love` | Attachment, bonding, and positive relational appraisal constructs. | A bounded emotion-vector component receiving configured positive and relational event influence, personality modulation, interaction, memory, and stability terms. | Not a clinical attachment measure or universal measurement of love. |
-| `fear` | Threat appraisal, uncertainty, and negative affect constructs. | A bounded component receiving negative-valence and uncertainty-related influence under the interaction policy. | Not a diagnosis, threat detector, or universal fear scale. |
-| `nostalgia` | Autobiographical memory and affective recollection constructs. | A bounded component influenced by relevance, surprise, memory influence, decay, and configured dynamics. | Not a validated measure of autobiographical nostalgia. |
-| `jealousy` | Individual-difference and relational threat appraisal constructs. | A bounded component using configured uncertainty and negative-valence influences, personality modulation, memory, and interactions. | Not a validated interpersonal or clinical jealousy instrument. |
-| `trust` | Relational expectation and social appraisal constructs. | A bounded component constrained by the interaction policy, including protected sign rules for fear/anger and trust coefficients. | Not a behavioral trust scale or universal social-cognition measure. |
-| `anger` | Goal obstruction, negative appraisal, and action-readiness constructs. | A bounded component receiving negative-valence and relevance influence, personality modulation, interaction, memory, and stability terms. | Not a validated anger or aggression assessment. |
-| `joy` | Positive affect and reward-related appraisal constructs. | A bounded component receiving positive-valence and surprise-related influence, personality modulation, interaction, memory, and stability terms. | Not a validated happiness or well-being measure. |
+| Dimension   | Theoretical anchor                                                     | EMORA operationalization                                                                                                                                           | Limitation / non-claim                                              |
+| ----------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------- |
+| `love`      | Attachment, bonding, and positive relational appraisal constructs.     | A bounded emotion-vector component receiving configured positive and relational event influence, personality modulation, interaction, memory, and stability terms. | Not a clinical attachment measure or universal measurement of love. |
+| `fear`      | Threat appraisal, uncertainty, and negative affect constructs.         | A bounded component receiving negative-valence and uncertainty-related influence under the interaction policy.                                                     | Not a diagnosis, threat detector, or universal fear scale.          |
+| `nostalgia` | Autobiographical memory and affective recollection constructs.         | A bounded component influenced by relevance, surprise, memory influence, decay, and configured dynamics.                                                           | Not a validated measure of autobiographical nostalgia.              |
+| `jealousy`  | Individual-difference and relational threat appraisal constructs.      | A bounded component using configured uncertainty and negative-valence influences, personality modulation, memory, and interactions.                                | Not a validated interpersonal or clinical jealousy instrument.      |
+| `trust`     | Relational expectation and social appraisal constructs.                | A bounded component constrained by the interaction policy, including protected sign rules for fear/anger and trust coefficients.                                   | Not a behavioral trust scale or universal social-cognition measure. |
+| `anger`     | Goal obstruction, negative appraisal, and action-readiness constructs. | A bounded component receiving negative-valence and relevance influence, personality modulation, interaction, memory, and stability terms.                          | Not a validated anger or aggression assessment.                     |
+| `joy`       | Positive affect and reward-related appraisal constructs.               | A bounded component receiving positive-valence and surprise-related influence, personality modulation, interaction, memory, and stability terms.                   | Not a validated happiness or well-being measure.                    |
 
 The registry also exposes `valence`, `arousal`, and `intensity` as continuous
 affect dimensions, while `confidence` and `confidenceAdjustment` are
@@ -44,8 +44,9 @@ extend source conventions without coupling the core to a transport.
 `PersonalityProfile` contains normalized, non-clinical model traits such as
 emotional sensitivity, baseline trust, baseline anxiety, attachment sensitivity,
 nostalgia sensitivity, and jealousy sensitivity. `EmotionalMemory` stores a
-previous state with normalized intensity, importance, and decay rate. No decay
-equation, embedding, or persistence is implemented in this phase.
+previous state with normalized intensity, importance, and decay rate. The core
+computes memory decay exponentially; embedding generation and persistence are
+not implemented in the pure core.
 
 `ModelVersion` identifies a model by `id`, `name`, and `version`. `ModelParameters`
 supports named sets of finite numeric values and optional metadata.
@@ -87,9 +88,11 @@ profile, optional memories, and optional model parameters.
 returns a `StateTransitionResult` containing the next estimated state,
 optional explanation metadata, and an optional confidence adjustment.
 
-This is an interchangeable contract only. Psychological equations,
-deterministic psychological providers, machine-learning providers, hybrid
-fusion, decay, and API orchestration are intentionally deferred.
+This is an interchangeable provider contract. The deterministic provider,
+transition equations, memory-decay calculation, and pure hybrid-fusion function
+are implemented in `@emora/emotional-core`; API orchestration and persistence
+are implemented outside the core. The pure core has no persistence or embedding
+generation, and there is no ML inference or training runtime.
 
 ## Determinism and boundaries
 

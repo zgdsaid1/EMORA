@@ -48,10 +48,10 @@ M(trait) = 1 + w \times (trait - 0.5)
 $$
 
 `w` is an explicit parameter. The modifier is bounded below by zero. The
-provider maps emotional sensitivity to fear, anger, joy, and trust; attachment,
-nostalgia, jealousy, anxiety, and baseline trust use their corresponding
-traits. This mapping is a **computational hypothesis**, not a validated
-psychological claim.
+provider maps emotional sensitivity to anger and joy, baseline anxiety to fear,
+baseline trust to trust, attachment sensitivity to love, nostalgia sensitivity
+to nostalgia, and jealousy sensitivity to jealousy. This mapping is a
+**computational hypothesis**, not a validated psychological claim.
 
 ## Base influence
 
@@ -166,12 +166,13 @@ validation, before deterministic dynamics run.
 
 ## Limitations and next phase
 
-This engine is an experimental deterministic mathematical foundation. It has no
-learned parameters, calibration data, psychological equations, training loop,
-API, database, or real-world validation. The Phase 6.1 ML provider and hybrid
-fusion contracts remain outside these deterministic equations. Future learned
-parameters may be added only after their assumptions, ranges, policies, tests,
-and limitations are defined.
+The pure `@emora/emotional-core` package is an experimental deterministic
+mathematical foundation. It has no learned parameters, calibration data,
+psychologically validated equations, training loop, API, database, or real-world
+validation. The API and database persistence are implemented outside this
+package. The Phase 6.1 ML provider and hybrid fusion contracts remain outside
+these deterministic equations. Future learned parameters may be added only
+after their assumptions, ranges, policies, tests, and limitations are defined.
 
 The broader product question of whether a negative event may ever increase
 final trust through memory or temporal stability remains an explicit future

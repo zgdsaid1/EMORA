@@ -40,13 +40,13 @@ pnpm test
 pnpm build
 ```
 
-Start the PostgreSQL and Redis development containers when needed:
+Start PostgreSQL for application persistence. Compose also defines Redis, which currently has no application usage:
 
 ```bash
 docker compose up -d
 ```
 
-These containers are infrastructure foundations only. Application database access and Redis logic are intentionally deferred.
+The application uses PostgreSQL. Redis is a Compose-only service and is not used by application code.
 
 ## Codespaces
 
@@ -58,7 +58,7 @@ Copy `.env.example` to a local environment file when future phases need configur
 
 ## Roadmap
 
-Phase 1 establishes the monorepo, developer environment, package boundaries, and domain contracts. Future phases may add typed configuration, persistence, authentication, versioned APIs, psychological equations, ML providers, hybrid fusion, and product workflows in that order of responsibility. See `docs/` for the current boundaries and limitations.
+The repository includes PostgreSQL persistence, Better Auth authentication, versioned `/api/v1` product APIs, and an active deterministic emotional model. Redis is defined in Compose but is not used by application code. There is no ML inference or training runtime; ML provider contracts exist without an implementation. See `docs/` for current boundaries and limitations.
 
 ## Governance
 
