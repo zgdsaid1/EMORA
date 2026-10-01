@@ -29,7 +29,7 @@ All primary keys are UUIDs. Timestamps use timezone-aware PostgreSQL timestamps.
 
 Organizations are the primary tenant boundary. Projects belong to organizations, and application access to projects is derived from `organization_members`. Profiles, events, states, memories, predictions, feedback, and API keys are project-scoped. Usage, subscriptions, billing events, and audit logs are organization-scoped.
 
-Foreign keys use PostgreSQL's default `NO ACTION` behavior. This avoids accidental deletion of historical, usage, billing, or audit records. The database package does not implement authorization; the application enforces authorization and tenant-scoped access through server-side checks and queries.
+Application-domain foreign keys use PostgreSQL's default `NO ACTION` behavior, which avoids accidental deletion of historical, usage, billing, or audit records. The authentication-table exceptions are `accounts.user_id` and `sessions.user_id`, which use `ON DELETE CASCADE`; `verifications` has no foreign key. The database package does not implement authorization; the application enforces authorization and tenant-scoped access through server-side checks and queries.
 
 ## Indexes
 

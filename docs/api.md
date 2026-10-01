@@ -12,8 +12,8 @@ Every `/api/v1` endpoint requires a server-side Better Auth session (HTTP-only
 cookie). Session identity is always derived server-side via `requireAuth`; no
 caller can assert an identity or an organization through the request.
 
-The Better Auth adapter is separate from `/api/v1` and is mounted at
-`/api/auth/[...all]` for GET and POST requests.
+The Better Auth Next.js route handler (`toNextJsHandler(auth)`) is separate from
+`/api/v1` and is mounted at `/api/auth/[...all]` for GET and POST requests.
 
 ## Authorization
 
