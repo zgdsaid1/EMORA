@@ -6,7 +6,12 @@ import { usePreferences } from './preferences';
 
 export function LoginNavigation() {
   const { t } = usePreferences();
-  return <nav><Link href="/register">{t('createAccount')}</Link></nav>;
+  return (
+    <nav>
+      <Link href="/register">{t('createAccount')}</Link>{' '}
+      <Link href="/forgot-password">{t('forgotPassword')}</Link>
+    </nav>
+  );
 }
 
 export function RegisterNavigation() {

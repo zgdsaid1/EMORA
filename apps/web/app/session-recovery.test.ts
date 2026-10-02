@@ -9,12 +9,10 @@ const projectId = '11111111-1111-4111-8111-111111111111';
 const profileId = '22222222-2222-4222-8222-222222222222';
 
 describe('validateReturnTarget', () => {
-  it('accepts /app and retains only valid project and profile UUIDs', () => {
+  it('accepts /app and the canonical project/profile identifier pair', () => {
     expect(validateReturnTarget('/app')).toBe('/app');
     expect(
-      validateReturnTarget(
-        `/app?projectId=${projectId}&profileId=${profileId}&admin=true`,
-      ),
+      validateReturnTarget(`/app?projectId=${projectId}&profileId=${profileId}`),
     ).toBe(`/app?projectId=${projectId}&profileId=${profileId}`);
   });
 
@@ -22,6 +20,17 @@ describe('validateReturnTarget', () => {
     '//evil.com',
     'https://evil.com',
     '/evil.com',
+    '/app/',
+    '/app/extra',
+    `/app?projectId=${projectId}`,
+    `/app?profileId=${profileId}`,
+    `/app?projectId=invalid&profileId=${profileId}`,
+    `/app?projectId=123&profileId=${profileId}`,
+    `/app?projectId=${projectId}&profileId=${profileId}&admin=true`,
+    `/app?projectId=${projectId}&profileId=${profileId}&unknown=value`,
+    `/app?profileId=${profileId}&projectId=${projectId}`,
+    `/app?projectId=${projectId}&profileId=${profileId}&profileId=${profileId}`,
+    `/app?projectId=%E0%A4%A&profileId=${profileId}`,
     'javascript:alert(1)',
     '\\\\evil.com',
     '/\\\\evil.com',
@@ -38,7 +47,7 @@ describe('validateReturnTarget', () => {
     expect(validateReturnTarget(candidate)).toBe('/app');
   });
 
-  it('drops invalid identifiers and rejects duplicate allowed identifiers', () => {
+  it('rejects invalid identifiers and duplicate parameters by falling back to /app', () => {
     expect(validateReturnTarget('/app?projectId=invalid&other=value')).toBe(
       '/app',
     );
@@ -57,13 +66,25 @@ describe('handleUnauthorizedResponse', () => {
     expect(
       handleUnauthorizedResponse(
         401,
-        `/app?projectId=${projectId}&unknown=value`,
+        `/app?projectId=${projectId}&profileId=${profileId}`,
         navigate,
       ),
     ).toBe(true);
     expect(navigate).toHaveBeenCalledWith(
-      `/login?callbackUrl=${encodeURIComponent(`/app?projectId=${projectId}`)}`,
+      `/login?callbackUrl=${encodeURIComponent(`/app?projectId=${projectId}&profileId=${profileId}`)}`,
     );
+  });
+
+  it('falls back to /app when a callback target contains an unexpected parameter', () => {
+    const navigate = vi.fn();
+
+    handleUnauthorizedResponse(
+      401,
+      `/app?projectId=${projectId}&profileId=${profileId}&admin=true`,
+      navigate,
+    );
+
+    expect(navigate).toHaveBeenCalledWith('/login?callbackUrl=%2Fapp');
   });
 
   it.each([200, 403, 404, 409, 500])(

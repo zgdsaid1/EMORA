@@ -1,8 +1,26 @@
 import { describe, expect, it } from 'vitest';
+import { renderToStaticMarkup } from 'react-dom/server';
+import * as React from 'react';
+import { vi } from 'vitest';
 
+import { LoginNavigation } from './auth-navigation';
 import { allNavigationItems, findNavigationItem, navigationCatalog } from './catalog';
 import { navigationLabel } from './navigation-messages';
 import { messages, translate, type Locale } from './messages';
+
+type ReactGlobal = typeof globalThis & { React?: typeof React };
+
+vi.mock('./preferences', () => ({
+  usePreferences: () => ({
+    t: (key: string) =>
+      key === 'forgotPassword' ? 'Forgot password?' : 'Create account',
+  }),
+}));
+
+vi.mock('next/link', () => ({
+  default: ({ href, children }: { href: string; children: React.ReactNode }) =>
+    (globalThis as ReactGlobal).React!.createElement('a', { href }, children),
+}));
 
 describe('design foundation catalog', () => {
   it('includes the complete 18-section product map', () => {
@@ -20,6 +38,20 @@ describe('design foundation catalog', () => {
         }
       }
       expect(Object.keys(messages[locale]).sort()).toEqual(Object.keys(messages.en).sort());
+      expect(messages[locale].forgotPassword).not.toBe('');
+    }
+  });
+
+  it('exposes the existing password-recovery route from login navigation', () => {
+    const globalWithReact = globalThis as ReactGlobal;
+    const previousReact = globalWithReact.React;
+    globalWithReact.React = React;
+
+    try {
+      const markup = renderToStaticMarkup(React.createElement(LoginNavigation));
+      expect(markup).toContain('<a href="/forgot-password">Forgot password?</a>');
+    } finally {
+      globalWithReact.React = previousReact;
     }
   });
 

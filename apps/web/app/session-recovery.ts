@@ -1,49 +1,17 @@
 const FALLBACK_RETURN_TO = '/app';
-const VALIDATION_ORIGIN = 'https://emora.invalid';
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const CANONICAL_CONTEXT_TARGET =
+  /^\/app\?projectId=([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})&profileId=([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i;
 
 export function validateReturnTarget(candidate: unknown): string {
-  const hasControlCharacter =
-    typeof candidate === 'string' &&
-    [...candidate].some((character) => {
-      const code = character.charCodeAt(0);
-      return code <= 0x1f || code === 0x7f;
-    });
-
-  if (
-    typeof candidate !== 'string' ||
-    !candidate.startsWith('/') ||
-    candidate.startsWith('//') ||
-    candidate.includes('\\') ||
-    hasControlCharacter
-  ) {
+  if (candidate === FALLBACK_RETURN_TO) return FALLBACK_RETURN_TO;
+  if (typeof candidate !== 'string') {
     return FALLBACK_RETURN_TO;
   }
 
-  try {
-    const target = new URL(candidate, VALIDATION_ORIGIN);
-    if (
-      target.origin !== VALIDATION_ORIGIN ||
-      target.pathname !== FALLBACK_RETURN_TO ||
-      target.hash
-    ) {
-      return FALLBACK_RETURN_TO;
-    }
+  const match = CANONICAL_CONTEXT_TARGET.exec(candidate);
+  if (!match) return FALLBACK_RETURN_TO;
 
-    const params = new URLSearchParams();
-    for (const key of ['projectId', 'profileId']) {
-      const values = target.searchParams.getAll(key);
-      if (values.length > 1) return FALLBACK_RETURN_TO;
-      if (values.length === 1 && UUID.test(values[0])) {
-        params.set(key, values[0]);
-      }
-    }
-
-    const query = params.toString();
-    return query ? `${FALLBACK_RETURN_TO}?${query}` : FALLBACK_RETURN_TO;
-  } catch {
-    return FALLBACK_RETURN_TO;
-  }
+  return `${FALLBACK_RETURN_TO}?projectId=${match[1]}&profileId=${match[2]}`;
 }
 
 export function handleUnauthorizedResponse(
