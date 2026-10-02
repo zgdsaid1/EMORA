@@ -4,6 +4,7 @@ import { FormEvent, useState } from 'react';
 
 import { authClient } from '@emora/auth/client';
 import { validateReturnTarget } from './session-recovery';
+import { usePreferences } from './shell/preferences';
 
 type AuthMode = 'login' | 'register';
 
@@ -14,6 +15,7 @@ export function AuthForm({
   mode: AuthMode;
   returnTo?: string;
 }) {
+  const { t } = usePreferences();
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
@@ -37,7 +39,7 @@ export function AuthForm({
             });
 
       if (result.error)
-        setError(result.error.message ?? 'Authentication failed.');
+        setError(result.error.message ?? t('authenticationFailure'));
       else {
         window.location.assign(
           mode === 'login' ? validateReturnTarget(returnTo) : '/app',
@@ -48,7 +50,7 @@ export function AuthForm({
     }
   }
 
-  const title = mode === 'login' ? 'Sign in' : 'Create account';
+  const title = mode === 'login' ? t('signIn') : t('createAccount');
 
   return (
     <main>
@@ -56,16 +58,16 @@ export function AuthForm({
       <form onSubmit={submit}>
         {mode === 'register' && (
           <label>
-            Name
+            {t('name')}
             <input name="name" required autoComplete="name" />
           </label>
         )}
         <label>
-          Email
+          {t('email')}
           <input name="email" type="email" required autoComplete="email" />
         </label>
         <label>
-          Password
+          {t('password')}
           <input
             name="password"
             type="password"
@@ -77,7 +79,7 @@ export function AuthForm({
           />
         </label>
         <button type="submit" disabled={pending}>
-          {pending ? 'Working...' : title}
+          {pending ? t('working') : title}
         </button>
       </form>
       {error && <p role="alert">{error}</p>}

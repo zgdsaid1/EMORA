@@ -1,7 +1,6 @@
-import Link from 'next/link';
-
 import { AuthForm } from '../auth-form';
 import { validateReturnTarget } from '../session-recovery';
+import { LoginNavigation } from '../shell/auth-navigation';
 
 export default async function LoginPage({
   searchParams,
@@ -14,9 +13,7 @@ export default async function LoginPage({
   return (
     <>
       <AuthForm mode="login" returnTo={returnTo} />
-      <nav>
-        <Link href="/register">Create an account</Link>{' '}
-      </nav>
+      <LoginNavigation />
     </>
   );
 }

@@ -16,6 +16,7 @@ import {
   grantControlledMembership,
 } from '../../server/transitions/fixture';
 import { validateReturnTarget } from '../session-recovery';
+import { ContextReporter } from '../shell/application-shell';
 
 export const dynamic = 'force-dynamic';
 
@@ -84,6 +85,11 @@ export default async function ProtectedAppPage({
     profiles[0];
 
   return (
+    <>
+      <ContextReporter
+        project={project ? { name: project.name, id: project.projectId } : undefined}
+        profile={profile ? { name: profile.externalReference, id: profile.profileId } : undefined}
+      />
     <main>
       <h1>HYBRID EMOTIONAL ENGINE</h1>
       <p>Signed in as {session.user.email}.</p>
@@ -184,5 +190,6 @@ export default async function ProtectedAppPage({
         </>
       )}
     </main>
+    </>
   );
 }

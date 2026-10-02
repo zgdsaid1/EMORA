@@ -1,15 +1,17 @@
+'use client';
+
 import Link from 'next/link';
 
+import { usePreferences } from '../shell/preferences';
+
 export default function ForgotPasswordPage() {
+  const { t } = usePreferences();
   return (
     <main>
-      <h1>Password reset unavailable</h1>
+      <h1>{t('resetUnavailableHeading')}</h1>
+      <p>{t('resetUnavailableDescription')}</p>
       <p>
-        Password reset is currently unavailable because reset email delivery is
-        not configured.
-      </p>
-      <p>
-        <Link href="/login">Return to sign in</Link>
+        <Link href="/login">{t('returnToSignIn')}</Link>
       </p>
     </main>
   );
