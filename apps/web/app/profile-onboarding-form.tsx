@@ -2,6 +2,8 @@
 
 import { FormEvent, useState } from 'react';
 
+import { handleUnauthorizedResponse } from './session-recovery';
+
 import {
   SCIENTIFIC_DISCLOSURE_CODE,
   SCIENTIFIC_DISCLOSURE_TEXT,
@@ -105,17 +107,22 @@ export function ProfileOnboardingForm({ projectId }: { projectId: string }) {
 
     setPending(true);
     try {
-      const response = await fetch(
-        `/api/v1/projects/${projectId}/profiles`,
-        {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify(payload),
-        },
-      );
+      const response = await fetch(`/api/v1/projects/${projectId}/profiles`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (
+        handleUnauthorizedResponse(
+          response.status,
+          `${window.location.pathname}${window.location.search}`,
+          (url) => window.location.assign(url),
+        )
+      ) {
+        return;
+      }
       const body = (await response.json()) as
-        | ProfileCreateResponse
-        | { error?: { message?: string } };
+        ProfileCreateResponse | { error?: { message?: string } };
 
       if (!response.ok) {
         setError(

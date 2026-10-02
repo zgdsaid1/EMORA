@@ -2,6 +2,8 @@
 
 import { FormEvent, useState } from 'react';
 
+import { handleUnauthorizedResponse } from './session-recovery';
+
 import {
   SCIENTIFIC_DISCLOSURE_CODE,
   SCIENTIFIC_DISCLOSURE_TEXT,
@@ -95,6 +97,15 @@ export function TransitionForm({
           body: JSON.stringify(payload),
         },
       );
+      if (
+        handleUnauthorizedResponse(
+          response.status,
+          `${window.location.pathname}${window.location.search}`,
+          (url) => window.location.assign(url),
+        )
+      ) {
+        return;
+      }
       const body = (await response.json()) as
         TransitionResponse | { error?: { message?: string } };
 

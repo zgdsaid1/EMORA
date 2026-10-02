@@ -1,12 +1,18 @@
+'use client';
+
 import Link from 'next/link';
 
-import { AuthForm } from '../auth-form';
+import { usePreferences } from '../shell/preferences';
 
 export default function ForgotPasswordPage() {
+  const { t } = usePreferences();
   return (
-    <>
-      <AuthForm mode="forgot-password" />
-      <p><Link href="/login">Back to login</Link></p>
-    </>
+    <main>
+      <h1>{t('resetUnavailableHeading')}</h1>
+      <p>{t('resetUnavailableDescription')}</p>
+      <p>
+        <Link href="/login">{t('returnToSignIn')}</Link>
+      </p>
+    </main>
   );
 }

@@ -1,5 +1,6 @@
-import { requireAuth } from '@emora/auth';
+import { AuthenticationError, requireAuth } from '@emora/auth';
 import { headers } from 'next/headers';
+import { redirect } from 'next/navigation';
 
 import { LatestStatePanel } from '../latest-state-panel';
 import { LogoutButton } from '../logout-button';
@@ -14,6 +15,8 @@ import {
   ensureControlledFixture,
   grantControlledMembership,
 } from '../../server/transitions/fixture';
+import { validateReturnTarget } from '../session-recovery';
+import { ContextReporter } from '../shell/application-shell';
 
 export const dynamic = 'force-dynamic';
 
@@ -31,7 +34,26 @@ export default async function ProtectedAppPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const session = await requireAuth(await headers());
+  const query = await searchParams;
+  let session: Awaited<ReturnType<typeof requireAuth>> | undefined;
+  try {
+    session = await requireAuth(await headers());
+  } catch (error) {
+    if (!(error instanceof AuthenticationError)) throw error;
+  }
+
+  if (!session) {
+    const returnParams = new URLSearchParams();
+    for (const key of ['projectId', 'profileId']) {
+      const value = query[key];
+      if (typeof value === 'string') returnParams.set(key, value);
+    }
+    const queryString = returnParams.toString();
+    const returnTarget = validateReturnTarget(
+      queryString ? `/app?${queryString}` : '/app',
+    );
+    redirect(`/login?callbackUrl=${encodeURIComponent(returnTarget)}`);
+  }
 
   // Production workspace discovery: membership-scoped, server-derived.
   let projects = await discoverAuthorizedProjects(session.user.id);
@@ -45,7 +67,6 @@ export default async function ProtectedAppPage({
     projects = await discoverAuthorizedProjects(session.user.id);
   }
 
-  const query = await searchParams;
   const requestedProjectId =
     typeof query.projectId === 'string' ? query.projectId : undefined;
   const requestedProfileId =
@@ -64,6 +85,11 @@ export default async function ProtectedAppPage({
     profiles[0];
 
   return (
+    <>
+      <ContextReporter
+        project={project ? { name: project.name, id: project.projectId } : undefined}
+        profile={profile ? { name: profile.externalReference, id: profile.profileId } : undefined}
+      />
     <main>
       <h1>HYBRID EMOTIONAL ENGINE</h1>
       <p>Signed in as {session.user.email}.</p>
@@ -164,5 +190,6 @@ export default async function ProtectedAppPage({
         </>
       )}
     </main>
+    </>
   );
 }
