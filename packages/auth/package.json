@@ -19,6 +19,7 @@
     "@emora/emotional-core": "workspace:*",
     "better-auth": "^1.7.3",
     "drizzle-orm": "^0.45.2",
+    "resend": "^6.32.0",
     "zod": "^4.5.4"
   },
   "devDependencies": {

@@ -4,6 +4,8 @@ import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { db } from '@emora/database';
 import * as schema from '@emora/database/schema';
 
+import { sendPasswordResetEmail } from './email';
+
 const authSecret = process.env.AUTH_SECRET;
 
 if (!authSecret) {
@@ -23,8 +25,10 @@ export const auth = betterAuth({
     enabled: true,
     autoSignIn: true,
     requireEmailVerification: false,
-    sendResetPassword: async () => {
-      // Email delivery is intentionally deferred; the reset flow is enabled.
+    sendResetPassword: async ({ user, url }) => {
+      if (user.email) {
+        await sendPasswordResetEmail({ email: user.email, url });
+      }
     },
   },
   emailVerification: {

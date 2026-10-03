@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const publicRoutes = ['/login', '/register', '/forgot-password'];
+const publicRoutes = [
+  '/login',
+  '/register',
+  '/forgot-password',
+  '/reset-password',
+];
 
 /**
  * Session-cookie name mirrors the application's Better Auth configuration in
