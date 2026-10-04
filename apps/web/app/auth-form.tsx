@@ -103,11 +103,16 @@ export function AuthForm({
       // (after a 500ms anti-enumeration floor) and only sends when the account
       // exists and is still unverified, so this confirmation is identical
       // whether or not the address has an account. Only transport failures
-      // surface as an error.
-      await authClient.sendVerificationEmail({
+      // surface as an error, and the generic failure message never reveals
+      // whether the address has an account.
+      const result = await authClient.sendVerificationEmail({
         email,
         callbackURL: VERIFICATION_CALLBACK,
       });
+      if (result.error) {
+        setResendError(t('verifyEmailResendFailed'));
+        return;
+      }
       setResendNotice(t('verifyEmailResendSent'));
     } catch {
       setResendError(t('verifyEmailResendFailed'));

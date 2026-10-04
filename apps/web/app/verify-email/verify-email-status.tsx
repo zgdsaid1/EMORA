@@ -17,7 +17,8 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 /**
  * Email-verification status page (Phase 3).
  *
- * Better Auth owns token verification entirely: the single-use token travels to
+ * Better Auth owns token verification entirely: the Better Auth-generated
+ * verification token travels to
  * `/api/auth/verify-email`, never to this page, so nothing here reads, stores or
  * logs it. This surface only reports the outcome Better Auth redirected back
  * with, and — when no valid link was used — offers a resend that goes through

@@ -30,7 +30,8 @@ export interface EmailVerificationEmailInput {
   readonly email: string;
   /**
    * Full verification URL supplied by Better Auth. It already contains the
-   * single-use verification token; this module never generates tokens itself.
+   * Better Auth-generated verification token; this module never generates
+   * tokens itself.
    */
   readonly url: string;
 }

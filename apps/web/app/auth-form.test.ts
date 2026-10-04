@@ -93,6 +93,21 @@ describe('resend from the pending state', () => {
     // Anti-enumeration: the confirmation must not depend on the response body.
     expect(formSource).not.toContain('result.data');
   });
+
+  it('checks the resend result.error before showing the sent notice', () => {
+    // A rejected resend must not report success (mirrors the /verify-email
+    // page, which also checks `result.error`).
+    expect(formSource).toContain(
+      'const result = await authClient.sendVerificationEmail({',
+    );
+    expect(formSource).toContain('if (result.error) {');
+    const errorCheck = formSource.indexOf('if (result.error) {');
+    const sentNotice = formSource.indexOf(
+      "setResendNotice(t('verifyEmailResendSent'))",
+    );
+    expect(errorCheck).toBeGreaterThan(-1);
+    expect(sentNotice).toBeGreaterThan(errorCheck);
+  });
 });
 
 describe('auth-form security and i18n boundaries', () => {

@@ -64,7 +64,7 @@ export const auth = betterAuth({
     expiresIn: 60 * 60,
     /**
      * The callback receives the fully built verification URL (with the
-     * single-use token) from Better Auth, so no token is generated here — this
+     * verification token) from Better Auth, so no token is generated here — this
      * module only transports the link over the existing Resend integration
      * (sender `noreply@emora.dev`). Because `autoSignInAfterVerification` is
      * left unset (falsy), clicking the link verifies the address without
