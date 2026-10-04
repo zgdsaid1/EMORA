@@ -4,12 +4,12 @@
     "build": {
       "dependsOn": ["^build"],
       "outputs": [".next/**", "dist/**"],
-      "env": ["DATABASE_URL", "AUTH_SECRET", "BETTER_AUTH_URL"]
+      "env": ["DATABASE_URL", "AUTH_SECRET", "BETTER_AUTH_URL", "RESEND_API_KEY"]
     },
     "dev": {
       "cache": false,
       "persistent": true,
-      "env": ["DATABASE_URL", "AUTH_SECRET", "BETTER_AUTH_URL"]
+      "env": ["DATABASE_URL", "AUTH_SECRET", "BETTER_AUTH_URL", "RESEND_API_KEY"]
     },
     "lint": {
       "dependsOn": ["^lint"]

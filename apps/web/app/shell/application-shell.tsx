@@ -91,7 +91,12 @@ const sectionIcons: Record<string, LucideIcon> = {
 };
 
 function isAuthRoute(pathname: string): boolean {
-  return ['/login', '/register', '/forgot-password'].includes(pathname);
+  return [
+    '/login',
+    '/register',
+    '/forgot-password',
+    '/reset-password',
+  ].includes(pathname);
 }
 
 function LocaleControl() {
