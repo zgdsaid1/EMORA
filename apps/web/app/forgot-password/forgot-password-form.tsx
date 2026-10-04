@@ -36,15 +36,17 @@ export function ForgotPasswordForm() {
 
     setPending(true);
     try {
-      // Better Auth owns the request; the client intentionally discards the
-      // outcome so the success state stays generic (anti-enumeration).
-      await Promise.resolve(
-        authClient.requestPasswordReset({
-          email,
-          redirectTo: '/reset-password',
-        }),
-      ).catch(() => undefined);
+      // F2: account existence stays generic — a 2xx response (known or unknown
+      // account) always yields the same success state. Only a thrown
+      // network/transport failure shows a generic technical error; the
+      // provider payload is never surfaced and no account existence is leaked.
+      await authClient.requestPasswordReset({
+        email,
+        redirectTo: '/reset-password',
+      });
       setSubmitted(true);
+    } catch {
+      setError(t('resetRequestFailed'));
     } finally {
       setPending(false);
     }

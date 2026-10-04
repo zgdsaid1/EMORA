@@ -41,10 +41,22 @@ describe('forgot-password anti-enumeration (mandatory)', () => {
     expect(formSource).toContain("redirectTo: '/reset-password'");
   });
 
-  it('always renders the same generic success state regardless of outcome', () => {
-    expect(formSource).toContain('.catch(() => undefined)');
+  it('renders the same generic success state for any resolved (2xx) request', () => {
+    // Known and unknown accounts both resolve with a generic 2xx payload, so
+    // the success path must not branch on the outcome (anti-enumeration).
+    expect(formSource).toContain('await authClient.requestPasswordReset({');
     expect(formSource).toContain('setSubmitted(true)');
     expect(formSource).toContain("t('resetRequestSuccess')");
+  });
+
+  it('shows a generic technical failure on request/transport failure only', () => {
+    // F2: a thrown (network/transport) error must surface a generic failure
+    // message that does NOT reveal account existence.
+    expect(formSource).toContain('} catch {');
+    expect(formSource).toContain("setError(t('resetRequestFailed'))");
+    expect(formSource).not.toContain('.catch(() => undefined)');
+    // The failure message must not leak the provider payload.
+    expect(formSource).not.toContain('result.error.message');
   });
 
   it('never reveals account existence', () => {

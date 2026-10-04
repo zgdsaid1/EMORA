@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+
 import { describe, expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import * as React from 'react';
@@ -21,6 +24,11 @@ vi.mock('next/link', () => ({
   default: ({ href, children }: { href: string; children: React.ReactNode }) =>
     (globalThis as ReactGlobal).React!.createElement('a', { href }, children),
 }));
+
+const shellSource = readFileSync(
+  fileURLToPath(new URL('./application-shell.tsx', import.meta.url)),
+  'utf8',
+);
 
 describe('design foundation catalog', () => {
   it('includes the complete 18-section product map', () => {
@@ -73,5 +81,26 @@ describe('design foundation catalog', () => {
     expect(translate('en', 'unknown')).toBe('Unknown');
     expect(translate('en', 'notEvaluable')).toBe('Not evaluable');
     expect(translate('en', 'error')).toBe('Error');
+  });
+
+  it('routes the public auth pages (incl. /reset-password) to the auth shell', () => {
+    // F3: /reset-password must be classified as an authentication route so it
+    // uses the auth frame, not the authenticated workspace shell. All public
+    // auth routes must share this classification consistently.
+    const classification = shellSource.match(
+      /function isAuthRoute[\s\S]*?includes\(pathname\)/,
+    );
+    expect(classification).not.toBeNull();
+    const body = classification![0];
+    for (const route of [
+      '/login',
+      '/register',
+      '/forgot-password',
+      '/reset-password',
+    ]) {
+      expect(body).toContain(`'${route}'`);
+    }
+    // The authenticated workspace must never be classified as an auth route.
+    expect(body).not.toContain("'/app'");
   });
 });

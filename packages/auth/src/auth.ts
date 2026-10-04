@@ -25,6 +25,15 @@ export const auth = betterAuth({
     enabled: true,
     autoSignIn: true,
     requireEmailVerification: false,
+    /**
+     * F1: revoking existing sessions on a successful password reset is a
+     * first-class Better Auth 1.7.3 option (see dist/api/routes/password.mjs:
+     * `emailAndPassword?.revokeSessionsOnPasswordReset` → `deleteUserSessions`).
+     * A successful reset now invalidates every existing session, so the user
+     * must authenticate again with the new password. Cookie semantics, session
+     * duration, RBAC and trusted origins are intentionally unchanged.
+     */
+    revokeSessionsOnPasswordReset: true,
     sendResetPassword: async ({ user, url }) => {
       if (user.email) {
         await sendPasswordResetEmail({ email: user.email, url });

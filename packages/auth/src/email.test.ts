@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
@@ -89,5 +92,29 @@ describe('password reset email sender', () => {
         url: 'https://emora.dev/reset-password/token123',
       }),
     ).rejects.toThrow('Failed to send the password reset email.');
+  });
+});
+
+describe('password reset timing / anti-enumeration (F4)', () => {
+  it('relies on the framework timing mitigation and adds no homemade delay', () => {
+    // F4: Better Auth 1.7.3 already mitigates timing for unknown accounts by
+    // simulating token generation + a DB lookup before returning the generic
+    // response. This module must not add an application-level sleep/jitter,
+    // which would be redundant and a potential DoS vector.
+    const moduleSource = readFileSync(
+      fileURLToPath(new URL('./email.ts', import.meta.url)),
+      'utf8',
+    );
+    for (const forbidden of ['setTimeout', 'setInterval', 'sleep(', 'delay(']) {
+      expect(moduleSource).not.toContain(forbidden);
+    }
+  });
+
+  it('does not log recipient addresses or reset URLs', () => {
+    const moduleSource = readFileSync(
+      fileURLToPath(new URL('./email.ts', import.meta.url)),
+      'utf8',
+    );
+    expect(moduleSource).not.toContain('console.');
   });
 });
