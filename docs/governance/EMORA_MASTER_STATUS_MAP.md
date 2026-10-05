@@ -1,9 +1,9 @@
 # EMORA — Master Status Map
 
-**Version:** 1.0
+**Version:** 1.1
 **Status:** AUTHORITATIVE
 **Baseline:** `main @ ea79fccd09ee90753a2a315c49d367777392513f`
-**Effective date:** 2026-10-03
+**Effective date:** 2026-10-05
 **Purpose:** authoritative project-state and governance reference
 **Scope:** repository / product / scientific / engineering / evaluation status
 
