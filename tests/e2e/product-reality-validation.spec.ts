@@ -1,3 +1,5 @@
+import { createHmac } from 'node:crypto';
+
 import { expect, test } from '@playwright/test';
 import type { BrowserContext, Page } from '@playwright/test';
 
@@ -45,6 +47,40 @@ const PROHIBITED_CLAIMS = [
 
 let projectIdA = '';
 
+/**
+ * The E2E environment has no mail transport (no RESEND_API_KEY), so Better
+ * Auth's stateless verification token is never observed from an email. The
+ * token is an HS256 JWT signed with the same AUTH_SECRET the production-mode
+ * server uses, so the test mints it deterministically and drives the real
+ * `/api/auth/verify-email` endpoint. The real application contract is still
+ * exercised end-to-end: no parallel auth system and no database bypass.
+ */
+const AUTH_SECRET =
+  process.env.AUTH_SECRET ?? 'emora-e2e-only-secret-not-for-production-32';
+const VERIFICATION_TTL_SECONDS = 60 * 60;
+const VERIFICATION_CALLBACK = '/verify-email?status=verified';
+
+function base64url(value: string): string {
+  return Buffer.from(value, 'utf8').toString('base64url');
+}
+
+function signVerificationToken(email: string): string {
+  const header = { alg: 'HS256' };
+  const now = Math.floor(Date.now() / 1000);
+  const payload = {
+    email: email.toLowerCase(),
+    iat: now,
+    exp: now + VERIFICATION_TTL_SECONDS,
+  };
+  const unsigned = `${base64url(JSON.stringify(header))}.${base64url(
+    JSON.stringify(payload),
+  )}`;
+  const signature = createHmac('sha256', AUTH_SECRET)
+    .update(unsigned)
+    .digest('base64url');
+  return `${unsigned}.${signature}`;
+}
+
 // The journey is one stateful browser narrative: a single shared context (and
 // page) carries the session cookie across all serial tests, exactly as a real
 // user's browser would.
@@ -61,12 +97,42 @@ test.afterAll(async () => {
 });
 
 test.describe.serial('Product Reality Validation Slice 1', () => {
-  test('register a new first user through the real authentication surface', async () => {
+  test('register a new first user and confirm verification is required', async () => {
     await page.goto('/register');
     await page.getByLabel('Name').fill(USER_A.name);
     await page.getByLabel('Email').fill(USER_A.email);
     await page.getByLabel('Password').fill(USER_A.password);
     await page.getByRole('button', { name: 'Create account' }).click();
+
+    // Phase 3 contract: registration creates the account but grants no
+    // session, so the user stays on the registration surface holding a
+    // verification-required notice instead of entering the workspace.
+    await expect(
+      page.getByRole('heading', { name: 'Confirm your email address' }),
+    ).toBeVisible();
+    await expect(page.getByText(/Check your inbox/)).toBeVisible();
+    await expect(page.getByText(USER_A.email)).toBeVisible();
+    // No authenticated session was minted: the workspace never loads.
+    await expect(page.getByText(/Signed in as/)).toHaveCount(0);
+  });
+
+  test('verify the email and deliberately sign in', async () => {
+    // Verify through the real endpoint with a deterministically minted token.
+    const token = signVerificationToken(USER_A.email);
+    await page.goto(
+      `/api/auth/verify-email?token=${token}&callbackURL=${encodeURIComponent(
+        VERIFICATION_CALLBACK,
+      )}`,
+    );
+    await expect(
+      page.getByRole('heading', { name: 'Email address confirmed' }),
+    ).toBeVisible();
+
+    // Deliberate sign-in now succeeds and opens the authenticated workspace.
+    await page.goto('/login');
+    await page.getByLabel('Email').fill(USER_A.email);
+    await page.getByLabel('Password').fill(USER_A.password);
+    await page.getByRole('button', { name: 'Sign in' }).click();
 
     await expect(page).toHaveURL(/\/app$/);
     await expect(page.getByText(/Signed in as/)).toContainText(USER_A.email);
@@ -214,6 +280,24 @@ test.describe.serial('Product Reality Validation Slice 1', () => {
     await intruderPage.getByLabel('Email').fill(USER_B.email);
     await intruderPage.getByLabel('Password').fill(USER_B.password);
     await intruderPage.getByRole('button', { name: 'Create account' }).click();
+
+    // Phase 3 contract: the intruder's registration also grants no session.
+    await expect(
+      intruderPage.getByRole('heading', {
+        name: 'Confirm your email address',
+      }),
+    ).toBeVisible();
+
+    // Verify and deliberately sign in so the intruder holds a real session.
+    await intruderPage.goto(
+      `/api/auth/verify-email?token=${signVerificationToken(
+        USER_B.email,
+      )}&callbackURL=${encodeURIComponent(VERIFICATION_CALLBACK)}`,
+    );
+    await intruderPage.goto('/login');
+    await intruderPage.getByLabel('Email').fill(USER_B.email);
+    await intruderPage.getByLabel('Password').fill(USER_B.password);
+    await intruderPage.getByRole('button', { name: 'Sign in' }).click();
 
     // The intruder has no workspace of their own (empty state, no fixtures).
     await expect(

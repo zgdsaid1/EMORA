@@ -1,10 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+/**
+ * Public (unauthenticated) surfaces. `/verify-email` is listed defensively: the
+ * `config.matcher` below currently scopes this middleware to `/app/:path*`, so
+ * the route is reachable already, and listing it keeps the verification landing
+ * page public if the matcher is ever widened. Verification state is never
+ * derived here — Better Auth owns the token, and `requireAuth` stays the sole
+ * authority for protected access.
+ */
 const publicRoutes = [
   '/login',
   '/register',
   '/forgot-password',
   '/reset-password',
+  '/verify-email',
 ];
 
 /**

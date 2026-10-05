@@ -113,11 +113,29 @@ describe('middleware session-cookie recognition', () => {
     vi.resetModules();
     const { middleware } = await import('./middleware');
 
-    for (const route of ['/login', '/register', '/forgot-password']) {
+    for (const route of [
+      '/login',
+      '/register',
+      '/forgot-password',
+      '/reset-password',
+      '/verify-email',
+    ]) {
       const response = middleware(requestWithCookie(route));
       expect(response.status).toBe(200);
       expect(redirectLocation(response)).toBeNull();
     }
+  });
+
+  it('keeps the verification landing page public for a verified redirect', async () => {
+    setNodeEnv('production');
+    vi.resetModules();
+    const { middleware } = await import('./middleware');
+
+    const response = middleware(
+      requestWithCookie('/verify-email?status=verified'),
+    );
+    expect(response.status).toBe(200);
+    expect(redirectLocation(response)).toBeNull();
   });
 
   it('keeps login reachable when an expired session cookie is still present', async () => {

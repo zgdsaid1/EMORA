@@ -116,6 +116,27 @@ export const messages = {
     acknowledge: 'Acknowledge',
     breadcrumb: 'Breadcrumb',
     availableModule: 'Available module',
+    verifyEmailHeading: 'Confirm your email address',
+    verifyEmailDescription:
+      'We sent a verification link to activate your EMORA account.',
+    verifyEmailPendingNotice:
+      'Check your inbox to finish activating your account.',
+    verifyEmailSentTo: 'Verification link sent to',
+    verifyEmailResend: 'Resend verification email',
+    verifyEmailResendSent:
+      'If that address has an account awaiting verification, a new link is on its way.',
+    verifyEmailResendFailed:
+      'We couldn’t send the verification email right now. Please try again.',
+    verifyEmailSuccessHeading: 'Email address confirmed',
+    verifyEmailSuccessDescription:
+      'Your account is active. You can now sign in.',
+    verifyEmailInvalidToken:
+      'This verification link is invalid or has expired.',
+    verifyEmailTokenExpired:
+      'This verification link has expired. Request a new one.',
+    verifyEmailMissingToken: 'This verification link is incomplete.',
+    verifyEmailSignIn: 'Continue to sign in',
+    emailNotVerified: 'Confirm your email address before signing in.',
     working: 'Working…',
     authenticationFailure: 'Authentication failed.',
     scientificTable: 'Scientific data table',
@@ -237,6 +258,27 @@ export const messages = {
     acknowledge: 'Prendre en compte',
     breadcrumb: 'Fil d’Ariane',
     availableModule: 'Module disponible',
+    verifyEmailHeading: 'Confirmez votre adresse e-mail',
+    verifyEmailDescription:
+      'Nous avons envoyé un lien de vérification pour activer votre compte EMORA.',
+    verifyEmailPendingNotice:
+      'Consultez votre boîte de réception pour finaliser l’activation de votre compte.',
+    verifyEmailSentTo: 'Lien de vérification envoyé à',
+    verifyEmailResend: 'Renvoyer l’e-mail de vérification',
+    verifyEmailResendSent:
+      'Si cette adresse correspond à un compte en attente de vérification, un nouveau lien est en route.',
+    verifyEmailResendFailed:
+      'Nous n’avons pas pu envoyer l’e-mail de vérification pour le moment. Veuillez réessayer.',
+    verifyEmailSuccessHeading: 'Adresse e-mail confirmée',
+    verifyEmailSuccessDescription:
+      'Votre compte est actif. Vous pouvez maintenant vous connecter.',
+    verifyEmailInvalidToken:
+      'Ce lien de vérification est invalide ou a expiré.',
+    verifyEmailTokenExpired:
+      'Ce lien de vérification a expiré. Demandez-en un nouveau.',
+    verifyEmailMissingToken: 'Ce lien de vérification est incomplet.',
+    verifyEmailSignIn: 'Continuer vers la connexion',
+    emailNotVerified: 'Confirmez votre adresse e-mail avant de vous connecter.',
     working: 'Traitement…',
     authenticationFailure: 'Échec de l’authentification.',
     scientificTable: 'Tableau de données scientifiques',
@@ -358,6 +400,22 @@ export const messages = {
     acknowledge: 'إقرار',
     breadcrumb: 'مسار التنقل',
     availableModule: 'وحدة متاحة',
+    verifyEmailHeading: 'أكّد عنوان بريدك الإلكتروني',
+    verifyEmailDescription: 'أرسلنا رابط تحقق لتفعيل حسابك في EMORA.',
+    verifyEmailPendingNotice: 'تحقق من صندوق الوارد لإكمال تفعيل حسابك.',
+    verifyEmailSentTo: 'تم إرسال رابط التحقق إلى',
+    verifyEmailResend: 'إعادة إرسال رسالة التحقق',
+    verifyEmailResendSent:
+      'إذا كان هذا العنوان مرتبطاً بحساب بانتظار التحقق، فسيصلك رابط جديد.',
+    verifyEmailResendFailed:
+      'تعذّر علينا إرسال رسالة التحقق حالياً. يرجى المحاولة مرة أخرى.',
+    verifyEmailSuccessHeading: 'تم تأكيد عنوان البريد الإلكتروني',
+    verifyEmailSuccessDescription: 'حسابك نشط. يمكنك الآن تسجيل الدخول.',
+    verifyEmailInvalidToken: 'رابط التحقق هذا غير صالح أو منتهي الصلاحية.',
+    verifyEmailTokenExpired: 'انتهت صلاحية رابط التحقق. اطلب رابطاً جديداً.',
+    verifyEmailMissingToken: 'رابط التحقق هذا غير مكتمل.',
+    verifyEmailSignIn: 'المتابعة إلى تسجيل الدخول',
+    emailNotVerified: 'أكّد عنوان بريدك الإلكتروني قبل تسجيل الدخول.',
     working: 'جارٍ التنفيذ…',
     authenticationFailure: 'فشل المصادقة.',
     scientificTable: 'جدول البيانات العلمية',
