@@ -14,6 +14,7 @@
 | Version | Date | Change |
 |---|---|---|
 | 1.0 | 2026-10-03 | Initial authoritative project-state baseline |
+| 1.1 | 2026-10-05 | Phase 3 (authentication: email verification + password reset) closed — production verified |
 
 ---
 
@@ -256,6 +257,14 @@ Implemented: Better Auth, registration, login, sessions, logout, protected appli
 RBAC hierarchy: `VIEWER` → `MEMBER` → `ADMIN` → `OWNER`.
 
 Authorization is **server-side**. Browser-supplied identity or organization information is not trusted as authorization proof.
+
+Email verification + password reset (Phase 3) — **CLOSED / PRODUCTION VERIFIED / SECURITY VERIFIED**.
+
+- Registration requires email verification: a new sign-up returns no session until the address is confirmed (`requireEmailVerification`).
+- Unverified sign-in is rejected (`EMAIL_NOT_VERIFIED`); verified sign-in opens the authenticated workspace.
+- Verification and password-reset emails are delivered through Resend (`noreply@emora.dev`); Resend sending is operational.
+- Production-verified: signup, verification email delivery, email verification, verified sign-in, password reset, and Resend delivery.
+- Duplicate-signup anti-enumeration audit: expected Better Auth 1.7.3 behavior (generic response; no verification email is sent for an existing address). Non-blocking; optional UI-copy refinement recorded for the future.
 
 ---
 
