@@ -118,6 +118,7 @@ export const messages = {
     acknowledge: 'Acknowledge',
     breadcrumb: 'Breadcrumb',
     availableModule: 'Available module',
+    verifyEmailKicker: 'VERIFICATION / ACCOUNT',
     verifyEmailHeading: 'Confirm your email address',
     verifyEmailDescription:
       'We sent a verification link to activate your EMORA account.',
@@ -341,6 +342,7 @@ export const messages = {
     acknowledge: 'Prendre en compte',
     breadcrumb: 'Fil d’Ariane',
     availableModule: 'Module disponible',
+    verifyEmailKicker: 'VÉRIFICATION / COMPTE',
     verifyEmailHeading: 'Confirmez votre adresse e-mail',
     verifyEmailDescription:
       'Nous avons envoyé un lien de vérification pour activer votre compte EMORA.',
@@ -564,6 +566,7 @@ export const messages = {
     acknowledge: 'إقرار',
     breadcrumb: 'مسار التنقل',
     availableModule: 'وحدة متاحة',
+    verifyEmailKicker: 'التحقق / الحساب',
     verifyEmailHeading: 'أكّد عنوان بريدك الإلكتروني',
     verifyEmailDescription: 'أرسلنا رابط تحقق لتفعيل حسابك في EMORA.',
     verifyEmailPendingNotice: 'تحقق من صندوق الوارد لإكمال تفعيل حسابك.',

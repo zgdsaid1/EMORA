@@ -313,6 +313,14 @@ kbd { display: inline-flex; align-items: center; gap: 3px; padding: 1px 4px; bor
   .workspace-readout-value { text-align: start; }
 }
 
+/* ---- Verify email (presentation surface) ---- */
+.verify-email { display: grid; max-width: 520px; gap: 20px; }
+.verify-email-description { margin: 0; color: var(--color-text-secondary); font-size: 14px; }
+.verify-email-status { margin: 0; padding: 12px 14px; border-inline-start: 2px solid var(--color-border-strong); background: var(--color-background-inset); color: var(--color-text-secondary); font-size: 13px; }
+.verify-email-status-error { border-inline-start-color: var(--color-status-error); color: var(--color-status-error); }
+.verify-email-notice { margin: 0; padding: 12px 14px; border-inline-start: 2px solid var(--color-accent-technical-muted); background: var(--color-background-inset); color: var(--color-text-secondary); font-size: 13px; }
+.verify-email-back { margin: 0; }
+
 @media (max-width: 1120px) {
   .context-grid { grid-template-columns: repeat(3, minmax(90px, 1fr)); }
   .context-bar { min-height: 94px; }
