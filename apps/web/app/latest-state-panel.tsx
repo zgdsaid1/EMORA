@@ -2,11 +2,10 @@
 
 import { useCallback, useEffect, useState } from 'react';
 
-import {
-  SCIENTIFIC_DISCLOSURE_CODE,
-  SCIENTIFIC_DISCLOSURE_TEXT,
-} from '../server/transitions/disclosure';
 import { handleUnauthorizedResponse } from './session-recovery';
+import { usePreferences } from './shell/preferences';
+
+import { SCIENTIFIC_DISCLOSURE_CODE } from '../server/transitions/disclosure';
 
 /**
  * Slice 2 panel: the most recently persisted computational state for the
@@ -46,6 +45,23 @@ const EMOTION_LABELS = [
   'joy',
 ] as const;
 
+/** Presentation labels keyed by the canonical machine token. */
+const EMOTION_LABEL_KEYS = {
+  love: 'wsEmotionLove',
+  fear: 'wsEmotionFear',
+  nostalgia: 'wsEmotionNostalgia',
+  jealousy: 'wsEmotionJealousy',
+  trust: 'wsEmotionTrust',
+  anger: 'wsEmotionAnger',
+  joy: 'wsEmotionJoy',
+} as const;
+
+const DIMENSION_LABELS = [
+  { key: 'valence', labelKey: 'wsDimValence' },
+  { key: 'arousal', labelKey: 'wsDimArousal' },
+  { key: 'intensity', labelKey: 'wsDimIntensity' },
+] as const;
+
 type PanelState =
   | { readonly kind: 'loading' }
   | { readonly kind: 'empty' }
@@ -59,6 +75,7 @@ export function LatestStatePanel({
   projectId: string;
   profileId: string;
 }) {
+  const { t } = usePreferences();
   const [state, setState] = useState<PanelState>({ kind: 'loading' });
 
   const load = useCallback(async () => {
@@ -97,68 +114,77 @@ export function LatestStatePanel({
 
   return (
     <section>
-      <h2>Most recent computational state</h2>
+      <h2>{t('wsLatestHeading')}</h2>
       <button
         type="button"
         onClick={() => void load()}
         disabled={state.kind === 'loading'}
       >
-        {state.kind === 'loading' ? 'Reading...' : 'Refresh state'}
+        {state.kind === 'loading' ? t('wsReading') : t('wsRefreshState')}
       </button>
 
-      {state.kind === 'empty' && (
-        <p>No computational state has been computed for this profile yet.</p>
-      )}
+      {state.kind === 'empty' && <p>{t('wsLatestEmpty')}</p>}
 
-      {state.kind === 'error' && (
-        <p role="alert">The latest state could not be read.</p>
-      )}
+      {state.kind === 'error' && <p role="alert">{t('wsLatestError')}</p>}
 
       {state.kind === 'ready' && (
         <div>
           <p>
-            <strong>Emotion vector</strong>
+            <strong>{t('wsEmotionVector')}</strong>
           </p>
           <ul>
             {EMOTION_LABELS.map((emotion) => (
               <li key={emotion}>
-                {emotion}: {state.data.emotionVector[emotion]?.toFixed(4)}
+                {t(EMOTION_LABEL_KEYS[emotion])}:{' '}
+                {state.data.emotionVector[emotion]?.toFixed(4)}
               </li>
             ))}
           </ul>
           <p>
-            <strong>Dimensions</strong>
+            <strong>{t('wsDimensions')}</strong>
           </p>
           <ul>
-            <li>valence: {state.data.dimensions.valence.toFixed(4)}</li>
-            <li>arousal: {state.data.dimensions.arousal.toFixed(4)}</li>
-            <li>intensity: {state.data.dimensions.intensity.toFixed(4)}</li>
+            {DIMENSION_LABELS.map((dimension) => (
+              <li key={dimension.key}>
+                {t(dimension.labelKey)}:{' '}
+                {state.data.dimensions[dimension.key].toFixed(4)}
+              </li>
+            ))}
           </ul>
           <p>
-            <strong>Model identity</strong>
+            <strong>{t('wsModelIdentity')}</strong>
           </p>
           <ul>
-            <li>name: {state.data.modelIdentity.name}</li>
-            <li>version: {state.data.modelIdentity.version}</li>
             <li>
-              provider: {state.data.modelIdentity.providerIdentifier} (
+              {t('name')}: {state.data.modelIdentity.name}
+            </li>
+            <li>
+              {t('wsVersion')}: {state.data.modelIdentity.version}
+            </li>
+            <li>
+              {t('wsProvider')}: {state.data.modelIdentity.providerIdentifier} (
               {state.data.modelIdentity.providerVersion})
             </li>
           </ul>
           <p>
-            <strong>Parameter identity</strong>: {state.data.parameterIdentity}
+            <strong>{t('wsParameterIdentity')}</strong>:{' '}
+            {state.data.parameterIdentity}
           </p>
-          <p>Computed at {state.data.timestamp}</p>
+          <p>
+            {t('wsComputedAt')} {state.data.timestamp}
+          </p>
         </div>
       )}
 
-      {/* Persistent, non-dismissible scientific disclosure. */}
+      {/* Persistent, non-dismissible scientific disclosure. The visible text
+          is the presentation translation keyed by the canonical disclosure
+          code; the server constant remains the machine/API authority. */}
       <aside
         role="note"
         data-disclosure={SCIENTIFIC_DISCLOSURE_CODE}
-        aria-label="Scientific disclosure"
+        aria-label={t('disclosureLabel')}
       >
-        <p>{SCIENTIFIC_DISCLOSURE_TEXT}</p>
+        <p>{t('disclosureText')}</p>
       </aside>
     </section>
   );

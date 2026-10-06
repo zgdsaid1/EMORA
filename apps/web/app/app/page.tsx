@@ -2,11 +2,6 @@ import { AuthenticationError, requireAuth } from '@emora/auth';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 
-import { LatestStatePanel } from '../latest-state-panel';
-import { LogoutButton } from '../logout-button';
-import { ProfileOnboardingForm } from '../profile-onboarding-form';
-import { TransitionForm } from '../transition-form';
-import { BootstrapForm } from '../bootstrap-form';
 import {
   discoverAuthorizedProfiles,
   discoverAuthorizedProjects,
@@ -17,17 +12,9 @@ import {
 } from '../../server/transitions/fixture';
 import { validateReturnTarget } from '../session-recovery';
 import { ContextReporter } from '../shell/application-shell';
+import { WorkspaceView } from '../workspace-view';
 
 export const dynamic = 'force-dynamic';
-
-/**
- * Slice 3 G2-C2 profile identity disclosure (frozen semantic meaning): shown
- * wherever profile identity is displayed or selected. A profile is a
- * model-configuration record used for computation — never a measured
- * personality and never an assessment of a person.
- */
-const PROFILE_IDENTITY_DISCLOSURE =
-  'This profile is a model-configuration record used for computation; it is not a psychological assessment of a person.' as const;
 
 export default async function ProtectedAppPage({
   searchParams,
@@ -90,106 +77,36 @@ export default async function ProtectedAppPage({
         project={project ? { name: project.name, id: project.projectId } : undefined}
         profile={profile ? { name: profile.externalReference, id: profile.profileId } : undefined}
       />
-    <main>
-      <h1>HYBRID EMOTIONAL ENGINE</h1>
-      <p>Signed in as {session.user.email}.</p>
-      <LogoutButton />
-
-      {projects.length === 0 ? (
-        <section>
-          <h2>No authorized project is available</h2>
-          <p>
-            This workspace has no project that your account may use. Any
-            organization and initial project created here will be owned by your
-            account. Existing organizations are not available through this
-            bootstrap.
-          </p>
-          <BootstrapForm />
-        </section>
-      ) : (
-        <>
-          <section>
-            <h2>Projects</h2>
-            <ul>
-              {projects.map((candidate) => (
-                <li key={candidate.projectId}>
-                  <a
-                    href={`?projectId=${candidate.projectId}`}
-                    aria-current={
-                      candidate.projectId === project?.projectId
-                        ? 'true'
-                        : undefined
-                    }
-                  >
-                    {candidate.name} ({candidate.projectId})
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </section>
-
-          <section>
-            <h2>Profiles</h2>
-            {profiles.length === 0 ? (
-              <p>
-                No profile record is available in this project yet. Create one
-                below. Profiles are model-configuration records used for
-                computation.
-              </p>
-            ) : (
-              <ul>
-                {profiles.map((candidate) => (
-                  <li key={candidate.profileId}>
-                    <a
-                      href={`?projectId=${project?.projectId}&profileId=${candidate.profileId}`}
-                      aria-current={
-                        candidate.profileId === profile?.profileId
-                          ? 'true'
-                          : undefined
-                      }
-                    >
-                      external reference {candidate.externalReference} (
-                      {candidate.profileId})
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            )}
-            {/* Slice 3 G2-C2 profile identity disclosure. */}
-            <aside role="note" aria-label="Profile identity disclosure">
-              <p>{PROFILE_IDENTITY_DISCLOSURE}</p>
-            </aside>
-            {/* A2: project-scoped profile onboarding over the existing
-                creation contract (server remains authoritative). */}
-            {project && <ProfileOnboardingForm projectId={project.projectId} />}
-          </section>
-
-          {profile && project ? (
-            <>
-              <p>
-                Project {project.projectId} · profile {profile.profileId}
-              </p>
-              <LatestStatePanel
-                projectId={project.projectId}
-                profileId={profile.profileId}
-              />
-              <TransitionForm
-                projectId={project.projectId}
-                profileId={profile.profileId}
-              />
-            </>
-          ) : (
-            <section>
-              <h2>No profile is selected</h2>
-              <p>
-                Select a profile above to compute and read computational states
-                for it.
-              </p>
-            </section>
-          )}
-        </>
-      )}
-    </main>
+      {/*
+        Minimal client presentation boundary: the server component resolves
+        authentication, discovery, and selection, then passes only
+        serializable identity data for localized rendering. No locale data
+        crosses this boundary, and the server stays authoritative.
+      */}
+      <WorkspaceView
+        sessionEmail={session.user.email}
+        projects={projects.map((candidate) => ({
+          projectId: candidate.projectId,
+          name: candidate.name,
+        }))}
+        profiles={profiles.map((candidate) => ({
+          profileId: candidate.profileId,
+          externalReference: candidate.externalReference,
+        }))}
+        project={
+          project
+            ? { projectId: project.projectId, name: project.name }
+            : undefined
+        }
+        profile={
+          profile
+            ? {
+                profileId: profile.profileId,
+                externalReference: profile.externalReference,
+              }
+            : undefined
+        }
+      />
     </>
   );
 }

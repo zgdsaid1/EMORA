@@ -3,11 +3,16 @@ import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
 
+import { messages } from './shell/messages';
+
 /**
  * A2 profile onboarding UI verification (source-scan convention, matching the
  * existing page/wording tests): contract-only fields, endpoint reuse,
  * loading/duplicate protection, envelope-only error rendering, success state,
  * frozen disclosure boundary, and workspace integration.
+ *
+ * M0: visible wording resolves through the EN/FR/AR presentation dictionary;
+ * the EN dictionary preserves the previously frozen English wording.
  */
 
 const formSource = readFileSync(
@@ -15,8 +20,8 @@ const formSource = readFileSync(
   'utf8',
 );
 
-const pageSource = readFileSync(
-  fileURLToPath(new URL('./app/page.tsx', import.meta.url)),
+const workspaceSource = readFileSync(
+  fileURLToPath(new URL('./workspace-view.tsx', import.meta.url)),
   'utf8',
 );
 
@@ -29,16 +34,10 @@ const PROFILE_FIELD_NAMES = [
   'jealousySensitivity',
 ] as const;
 
-/** Extracts the frozen profile identity disclosure literal from a source file. */
-function extractIdentityDisclosure(source: string): string {
-  const match = source.match(/PROFILE_IDENTITY_DISCLOSURE =\s*'([^']+)'/);
-  if (!match) throw new Error('frozen profile identity disclosure not found');
-  return match[1];
-}
-
 describe('A2 profile onboarding surface', () => {
   it('renders the onboarding entry point with the contract-only fields', () => {
-    expect(formSource).toContain('Create a profile');
+    expect(formSource).toContain("t('wsCreateProfile')");
+    expect(messages.en.wsCreateProfile).toBe('Create a profile');
     expect(formSource).toContain('name="externalReference"');
     expect(formSource).toContain('name="additionalTraits"');
     for (const name of PROFILE_FIELD_NAMES) {
@@ -69,13 +68,18 @@ describe('A2 profile onboarding surface', () => {
 
   it('provides client-side UX validation within the contract bounds', () => {
     expect(formSource).toContain('maxLength={128}');
-    expect(formSource).toContain(
+    expect(formSource).toContain("t('wsExtRefLength')");
+    expect(formSource).toContain("t('wsExtRefPrintable')");
+    expect(formSource).toContain("t('wsTraitsObject')");
+    expect(messages.en.wsExtRefLength).toBe(
       'External reference must be 1 to 128 characters.',
     );
-    expect(formSource).toContain(
+    expect(messages.en.wsExtRefPrintable).toBe(
       'External reference may contain printable characters only.',
     );
-    expect(formSource).toContain('Additional traits must be a JSON object.');
+    expect(messages.en.wsTraitsObject).toBe(
+      'Additional traits must be a JSON object.',
+    );
   });
 });
 
@@ -92,13 +96,16 @@ describe('A2 submission behavior', () => {
   it('prevents duplicate submissions while a request is in progress', () => {
     expect(formSource).toContain('disabled={pending}');
     expect(formSource).toContain('if (pending) return;');
-    expect(formSource).toContain("pending ? 'Creating...' : 'Create profile'");
+    expect(formSource).toContain(
+      "pending ? t('wsCreatingProfile') : t('wsCreateProfileAction')",
+    );
     expect(formSource).toContain('setPending(false)');
   });
 
   it('renders a success state after creation', () => {
     expect(formSource).toContain('role="status"');
-    expect(formSource).toContain('Profile created');
+    expect(formSource).toContain("t('wsProfileCreated')");
+    expect(messages.en.wsProfileCreated).toBe('Profile created.');
     expect(formSource).toContain('result.externalReference');
     expect(formSource).toContain('result.profileId');
     expect(formSource).toContain('result.createdAt');
@@ -111,7 +118,10 @@ describe('A2 error safety', () => {
   it('renders only the server envelope message and a safe fallback', () => {
     expect(formSource).toContain('role="alert"');
     expect(formSource).toContain('error?.message');
-    expect(formSource).toContain('The profile could not be created.');
+    expect(formSource).toContain("t('wsProfileCreateFailed')");
+    expect(messages.en.wsProfileCreateFailed).toBe(
+      'The profile could not be created.',
+    );
   });
 
   it('never surfaces internal error details', () => {
@@ -141,20 +151,29 @@ describe('A2 error safety', () => {
 });
 
 describe('A2 scientific boundary', () => {
-  it('reuses the frozen profile identity disclosure byte-identically', () => {
-    expect(extractIdentityDisclosure(formSource)).toBe(
-      extractIdentityDisclosure(pageSource),
+  it('renders the profile identity disclosure through the shared dictionary', () => {
+    expect(formSource).toContain(
+      "aria-label={t('wsProfileIdentityDisclosureLabel')}",
     );
-    expect(extractIdentityDisclosure(formSource)).toContain(
+    expect(formSource).toContain("{t('wsProfileIdentityDisclosure')}");
+    // One frozen semantic definition; EN/FR/AR presentation translations.
+    expect(messages.en.wsProfileIdentityDisclosure).toContain(
       'model-configuration record',
+    );
+    expect(messages.fr.wsProfileIdentityDisclosure).toContain(
+      'configuration du modèle',
+    );
+    expect(messages.ar.wsProfileIdentityDisclosure).toContain(
+      'سجل لإعدادات النموذج',
     );
   });
 
-  it('imports the canonical scientific disclosure instead of hardcoding wording', () => {
-    expect(formSource).toContain("from '../server/transitions/disclosure'");
+  it('resolves the scientific disclosure through the dictionary keyed by the canonical code', () => {
+    expect(formSource).toMatch(/from '.+server\/transitions\/disclosure'/);
     expect(formSource).toContain('SCIENTIFIC_DISCLOSURE_CODE');
-    expect(formSource).toContain('SCIENTIFIC_DISCLOSURE_TEXT');
+    expect(formSource).not.toContain('SCIENTIFIC_DISCLOSURE_TEXT');
     expect(formSource).not.toContain('EMORA output is a computational');
+    expect(formSource).toContain("t('disclosureText')");
   });
 
   it('contains no measurement, diagnosis, or assessment wording', () => {
@@ -177,16 +196,18 @@ describe('A2 scientific boundary', () => {
 
   it('renders the persistent non-dismissible disclosure markup', () => {
     expect(formSource).toContain('role="note"');
-    expect(formSource).toContain('aria-label="Profile identity disclosure"');
-    expect(formSource).toContain('aria-label="Scientific disclosure"');
+    expect(formSource).toContain(
+      "aria-label={t('wsProfileIdentityDisclosureLabel')}",
+    );
+    expect(formSource).toContain("aria-label={t('disclosureLabel')}");
     expect(formSource).toContain('data-disclosure={SCIENTIFIC_DISCLOSURE_CODE}');
   });
 });
 
 describe('A2 workspace integration', () => {
   it('renders the onboarding form inside the project-scoped workspace', () => {
-    expect(pageSource).toContain('ProfileOnboardingForm');
-    expect(pageSource).toContain('projectId={project.projectId}');
+    expect(workspaceSource).toContain('ProfileOnboardingForm');
+    expect(workspaceSource).toContain('projectId={project.projectId}');
   });
 });
 
@@ -218,7 +239,7 @@ describe('first-user bootstrap form', () => {
   });
 
   it('offers bootstrap only in the no-authorized-project state', () => {
-    expect(pageSource).toContain('<BootstrapForm />');
-    expect(pageSource).toContain('projects.length === 0');
+    expect(workspaceSource).toContain('<BootstrapForm />');
+    expect(workspaceSource).toContain('projects.length === 0');
   });
 });
