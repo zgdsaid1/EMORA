@@ -69,10 +69,15 @@ function VerifyEmailStatusInner() {
 
   if (outcome.state === 'verified') {
     return (
-      <main>
-        <h1>{t('verifyEmailSuccessHeading')}</h1>
-        <p role="status">{t('verifyEmailSuccessDescription')}</p>
-        <p>
+      <main className="verify-email">
+        <header className="page-heading">
+          <span className="page-kicker">{t('verifyEmailKicker')}</span>
+          <h1>{t('verifyEmailSuccessHeading')}</h1>
+        </header>
+        <p role="status" className="workspace-status">
+          {t('verifyEmailSuccessDescription')}
+        </p>
+        <p className="verify-email-back">
           <Link href="/login">{t('verifyEmailSignIn')}</Link>
         </p>
       </main>
@@ -80,25 +85,48 @@ function VerifyEmailStatusInner() {
   }
 
   return (
-    <main>
-      <h1>{t('verifyEmailHeading')}</h1>
-      <p role="alert">{t(outcome.messageKey)}</p>
-      <p>{t('verifyEmailDescription')}</p>
+    <main className="verify-email">
+      <header className="page-heading">
+        <span className="page-kicker">{t('verifyEmailKicker')}</span>
+        <h1>{t('verifyEmailHeading')}</h1>
+      </header>
+
+      <p
+        role="alert"
+        className={`verify-email-status${
+          outcome.state === 'failed' ? ' verify-email-status-error' : ''
+        }`}
+      >
+        {t(outcome.messageKey)}
+      </p>
+
+      <p className="verify-email-description">{t('verifyEmailDescription')}</p>
+
       {resendSent ? (
-        <p role="status">{t('verifyEmailResendSent')}</p>
+        <p role="status" className="verify-email-notice">
+          {t('verifyEmailResendSent')}
+        </p>
       ) : (
-        <form onSubmit={resend}>
-          <label>
-            {t('email')}
+        <form onSubmit={resend} className="workspace-form">
+          <label className="workspace-field">
+            <span className="workspace-field-label">{t('email')}</span>
             <input name="email" type="email" required autoComplete="email" />
           </label>
-          <button type="submit" disabled={pending}>
-            {pending ? t('working') : t('verifyEmailResend')}
-          </button>
+          <div className="workspace-actions">
+            <button type="submit" className="workspace-button" disabled={pending}>
+              {pending ? t('working') : t('verifyEmailResend')}
+            </button>
+          </div>
         </form>
       )}
-      {error && <p role="alert">{error}</p>}
-      <p>
+
+      {error && (
+        <p role="alert" className="workspace-error">
+          {error}
+        </p>
+      )}
+
+      <p className="verify-email-back">
         <Link href="/login">{t('returnToSignIn')}</Link>
       </p>
     </main>
