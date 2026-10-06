@@ -42,24 +42,32 @@ export function WorkspaceView({
   const { t } = usePreferences();
 
   return (
-    <main>
-      <h1>{t('wsTitle')}</h1>
-      <p>
-        {t('wsSignedInAs')} {sessionEmail}.
-      </p>
+    <main className="workspace-view">
+      <header className="workspace-heading">
+        <span className="page-kicker">{t('instrument')}</span>
+        <h1>{t('wsTitle')}</h1>
+        <p className="workspace-signed-in">
+          {t('wsSignedInAs')} {sessionEmail}.
+        </p>
+      </header>
+
       <LogoutButton />
 
       {projects.length === 0 ? (
-        <section>
-          <h2>{t('wsNoProjectHeading')}</h2>
+        <section className="workspace-section">
+          <div className="workspace-section-heading">
+            <h2>{t('wsNoProjectHeading')}</h2>
+          </div>
           <p>{t('wsNoProjectBody')}</p>
           <BootstrapForm />
         </section>
       ) : (
         <>
-          <section>
-            <h2>{t('wsProjects')}</h2>
-            <ul>
+          <section className="workspace-section">
+            <div className="workspace-section-heading">
+              <h2>{t('wsProjects')}</h2>
+            </div>
+            <ul className="workspace-list">
               {projects.map((candidate) => (
                 <li key={candidate.projectId}>
                   <a
@@ -70,19 +78,24 @@ export function WorkspaceView({
                         : undefined
                     }
                   >
-                    {candidate.name} ({candidate.projectId})
+                    <span>{candidate.name}</span>
+                    <span className="workspace-item-id">
+                      {candidate.projectId}
+                    </span>
                   </a>
                 </li>
               ))}
             </ul>
           </section>
 
-          <section>
-            <h2>{t('wsProfiles')}</h2>
+          <section className="workspace-section">
+            <div className="workspace-section-heading">
+              <h2>{t('wsProfiles')}</h2>
+            </div>
             {profiles.length === 0 ? (
               <p>{t('wsNoProfilesBody')}</p>
             ) : (
-              <ul>
+              <ul className="workspace-list">
                 {profiles.map((candidate) => (
                   <li key={candidate.profileId}>
                     <a
@@ -93,8 +106,13 @@ export function WorkspaceView({
                           : undefined
                       }
                     >
-                      {t('wsExternalReference')}{' '}
-                      {candidate.externalReference} ({candidate.profileId})
+                      <span>
+                        {t('wsExternalReference')}{' '}
+                        {candidate.externalReference}
+                      </span>
+                      <span className="workspace-item-id">
+                        {candidate.profileId}
+                      </span>
                     </a>
                   </li>
                 ))}
@@ -104,6 +122,7 @@ export function WorkspaceView({
                 translation of the frozen English semantic definition). */}
             <aside
               role="note"
+              className="workspace-note"
               aria-label={t('wsProfileIdentityDisclosureLabel')}
             >
               <p>{t('wsProfileIdentityDisclosure')}</p>
@@ -115,9 +134,9 @@ export function WorkspaceView({
 
           {profile && project ? (
             <>
-              <p>
-                {t('wsProjectLabel')} {project.projectId} ·{' '}
-                {t('wsProfileLabel')} {profile.profileId}
+              <p className="workspace-meta">
+                {t('wsProjectLabel')} <code>{project.projectId}</code> ·{' '}
+                {t('wsProfileLabel')} <code>{profile.profileId}</code>
               </p>
               <LatestStatePanel
                 projectId={project.projectId}
@@ -129,8 +148,10 @@ export function WorkspaceView({
               />
             </>
           ) : (
-            <section>
-              <h2>{t('wsNoProfileSelectedHeading')}</h2>
+            <section className="workspace-section">
+              <div className="workspace-section-heading">
+                <h2>{t('wsNoProfileSelectedHeading')}</h2>
+              </div>
               <p>{t('wsNoProfileSelectedBody')}</p>
             </section>
           )}

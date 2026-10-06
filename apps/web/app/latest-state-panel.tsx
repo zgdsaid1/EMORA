@@ -113,67 +113,88 @@ export function LatestStatePanel({
   }, [load]);
 
   return (
-    <section>
-      <h2>{t('wsLatestHeading')}</h2>
-      <button
-        type="button"
-        onClick={() => void load()}
-        disabled={state.kind === 'loading'}
-      >
-        {state.kind === 'loading' ? t('wsReading') : t('wsRefreshState')}
-      </button>
+    <section className="workspace-section">
+      <div className="workspace-section-heading">
+        <h2>{t('wsLatestHeading')}</h2>
+        <button
+          type="button"
+          className="text-button"
+          onClick={() => void load()}
+          disabled={state.kind === 'loading'}
+        >
+          {state.kind === 'loading' ? t('wsReading') : t('wsRefreshState')}
+        </button>
+      </div>
 
-      {state.kind === 'empty' && <p>{t('wsLatestEmpty')}</p>}
+      {state.kind === 'empty' && (
+        <p className="workspace-meta">{t('wsLatestEmpty')}</p>
+      )}
 
-      {state.kind === 'error' && <p role="alert">{t('wsLatestError')}</p>}
+      {state.kind === 'error' && (
+        <p role="alert" className="workspace-error">{t('wsLatestError')}</p>
+      )}
 
       {state.kind === 'ready' && (
-        <div>
-          <p>
-            <strong>{t('wsEmotionVector')}</strong>
-          </p>
-          <ul>
+        <>
+          <div className="workspace-readout">
+            <h3 className="workspace-readout-heading">{t('wsEmotionVector')}</h3>
             {EMOTION_LABELS.map((emotion) => (
-              <li key={emotion}>
-                {t(EMOTION_LABEL_KEYS[emotion])}:{' '}
-                {state.data.emotionVector[emotion]?.toFixed(4)}
-              </li>
+              <div key={emotion} className="workspace-readout-row">
+                <span className="workspace-readout-label">
+                  {t(EMOTION_LABEL_KEYS[emotion])}
+                </span>
+                <span className="workspace-readout-value">
+                  {state.data.emotionVector[emotion]?.toFixed(4)}
+                </span>
+              </div>
             ))}
-          </ul>
-          <p>
-            <strong>{t('wsDimensions')}</strong>
-          </p>
-          <ul>
+
+            <h3 className="workspace-readout-heading">{t('wsDimensions')}</h3>
             {DIMENSION_LABELS.map((dimension) => (
-              <li key={dimension.key}>
-                {t(dimension.labelKey)}:{' '}
-                {state.data.dimensions[dimension.key].toFixed(4)}
-              </li>
+              <div key={dimension.key} className="workspace-readout-row">
+                <span className="workspace-readout-label">
+                  {t(dimension.labelKey)}
+                </span>
+                <span className="workspace-readout-value">
+                  {state.data.dimensions[dimension.key].toFixed(4)}
+                </span>
+              </div>
             ))}
-          </ul>
-          <p>
-            <strong>{t('wsModelIdentity')}</strong>
+
+            <h3 className="workspace-readout-heading">{t('wsModelIdentity')}</h3>
+            <div className="workspace-readout-row">
+              <span className="workspace-readout-label">{t('name')}</span>
+              <span className="workspace-readout-value">
+                {state.data.modelIdentity.name}
+              </span>
+            </div>
+            <div className="workspace-readout-row">
+              <span className="workspace-readout-label">{t('wsVersion')}</span>
+              <span className="workspace-readout-value">
+                {state.data.modelIdentity.version}
+              </span>
+            </div>
+            <div className="workspace-readout-row">
+              <span className="workspace-readout-label">{t('wsProvider')}</span>
+              <span className="workspace-readout-value">
+                {state.data.modelIdentity.providerIdentifier} (
+                {state.data.modelIdentity.providerVersion})
+              </span>
+            </div>
+            <div className="workspace-readout-row">
+              <span className="workspace-readout-label">
+                {t('wsParameterIdentity')}
+              </span>
+              <span className="workspace-readout-value">
+                <code>{state.data.parameterIdentity}</code>
+              </span>
+            </div>
+          </div>
+          <p className="workspace-meta">
+            {t('wsComputedAt')}{' '}
+            <time dateTime={state.data.timestamp}>{state.data.timestamp}</time>
           </p>
-          <ul>
-            <li>
-              {t('name')}: {state.data.modelIdentity.name}
-            </li>
-            <li>
-              {t('wsVersion')}: {state.data.modelIdentity.version}
-            </li>
-            <li>
-              {t('wsProvider')}: {state.data.modelIdentity.providerIdentifier} (
-              {state.data.modelIdentity.providerVersion})
-            </li>
-          </ul>
-          <p>
-            <strong>{t('wsParameterIdentity')}</strong>:{' '}
-            {state.data.parameterIdentity}
-          </p>
-          <p>
-            {t('wsComputedAt')} {state.data.timestamp}
-          </p>
-        </div>
+        </>
       )}
 
       {/* Persistent, non-dismissible scientific disclosure. The visible text
@@ -181,6 +202,7 @@ export function LatestStatePanel({
           code; the server constant remains the machine/API authority. */}
       <aside
         role="note"
+        className="scientific-disclosure"
         data-disclosure={SCIENTIFIC_DISCLOSURE_CODE}
         aria-label={t('disclosureLabel')}
       >

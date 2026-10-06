@@ -69,13 +69,13 @@ export function BootstrapForm() {
   }
 
   return (
-    <form onSubmit={submit}>
-      <label>
-        {t('wsOrganizationName')}
+    <form className="workspace-form" onSubmit={submit}>
+      <label className="workspace-field">
+        <span className="workspace-field-label">{t('wsOrganizationName')}</span>
         <input name="organizationName" type="text" required />
       </label>
-      <label>
-        {t('wsOrganizationSlug')}
+      <label className="workspace-field">
+        <span className="workspace-field-label">{t('wsOrganizationSlug')}</span>
         <input
           name="organizationSlug"
           type="text"
@@ -83,12 +83,12 @@ export function BootstrapForm() {
           required
         />
       </label>
-      <label>
-        {t('wsProjectName')}
+      <label className="workspace-field">
+        <span className="workspace-field-label">{t('wsProjectName')}</span>
         <input name="projectName" type="text" required />
       </label>
-      <label>
-        {t('wsProjectSlug')}
+      <label className="workspace-field">
+        <span className="workspace-field-label">{t('wsProjectSlug')}</span>
         <input
           name="projectSlug"
           type="text"
@@ -96,10 +96,12 @@ export function BootstrapForm() {
           required
         />
       </label>
-      <button type="submit" disabled={pending}>
-        {pending ? t('wsCreatingWorkspace') : t('wsCreateWorkspace')}
-      </button>
-      {error && <p role="alert">{error}</p>}
+      <div className="workspace-actions">
+        <button className="workspace-button" type="submit" disabled={pending}>
+          {pending ? t('wsCreatingWorkspace') : t('wsCreateWorkspace')}
+        </button>
+      </div>
+      {error && <p role="alert" className="workspace-error">{error}</p>}
     </form>
   );
 }
