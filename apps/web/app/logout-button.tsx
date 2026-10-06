@@ -13,7 +13,7 @@ export function LogoutButton() {
   }
 
   return (
-    <button type="button" onClick={logout}>
+    <button type="button" className="text-button" onClick={logout}>
       {t('logout')}
     </button>
   );

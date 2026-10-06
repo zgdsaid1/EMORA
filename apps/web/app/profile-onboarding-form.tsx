@@ -131,12 +131,14 @@ export function ProfileOnboardingForm({ projectId }: { projectId: string }) {
   }
 
   return (
-    <section>
-      <h2>{t('wsCreateProfile')}</h2>
-      <p>{t('wsCreateProfileIntro')}</p>
-      <form onSubmit={submit}>
-        <label>
-          {t('wsExternalReference')}
+    <section className="workspace-section">
+      <div className="workspace-section-heading">
+        <h2>{t('wsCreateProfile')}</h2>
+      </div>
+      <p className="workspace-meta">{t('wsCreateProfileIntro')}</p>
+      <form className="workspace-form" onSubmit={submit}>
+        <label className="workspace-field">
+          <span className="workspace-field-label">{t('wsExternalReference')}</span>
           <input
             name="externalReference"
             type="text"
@@ -145,13 +147,13 @@ export function ProfileOnboardingForm({ projectId }: { projectId: string }) {
             required
           />
         </label>
-        <p>{t('wsExternalReferenceHint')}</p>
+        <p className="workspace-field-help">{t('wsExternalReferenceHint')}</p>
 
-        <fieldset>
+        <fieldset className="workspace-fieldset">
           <legend>{t('wsModelConfiguration')}</legend>
           {PROFILE_FIELDS.map((field) => (
-            <label key={field.name}>
-              {t(field.labelKey)}
+            <label className="workspace-field" key={field.name}>
+              <span className="workspace-field-label">{t(field.labelKey)}</span>
               <input
                 name={field.name}
                 type="number"
@@ -165,40 +167,50 @@ export function ProfileOnboardingForm({ projectId }: { projectId: string }) {
           ))}
         </fieldset>
 
-        <label>
-          {t('wsAdditionalTraits')}
+        <label className="workspace-field">
+          <span className="workspace-field-label">{t('wsAdditionalTraits')}</span>
           <textarea
             name="additionalTraits"
             rows={3}
             placeholder={'{"name": 0.5}'}
           />
         </label>
-        <p>{t('wsAdditionalTraitsHint')}</p>
+        <p className="workspace-field-help">{t('wsAdditionalTraitsHint')}</p>
 
-        <button type="submit" disabled={pending}>
-          {pending ? t('wsCreatingProfile') : t('wsCreateProfileAction')}
-        </button>
+        <div className="workspace-actions">
+          <button className="workspace-button" type="submit" disabled={pending}>
+            {pending ? t('wsCreatingProfile') : t('wsCreateProfileAction')}
+          </button>
+        </div>
       </form>
 
-      {error && <p role="alert">{error}</p>}
+      {error && <p role="alert" className="workspace-error">{error}</p>}
 
       {result && (
-        <div role="status">
-          <p>{t('wsProfileCreated')}</p>
-          <p>
-            {t('wsExternalReference')}: {result.externalReference}
-          </p>
-          <p>
-            {t('wsProjectLabel')} {result.projectId} ·{' '}
-            {t('wsProfileLabel')} {result.profileId}
-          </p>
-          <p>
-            {t('wsCreatedAt')} {result.createdAt}
-          </p>
-          <p>
-            <a href={`?projectId=${projectId}`}>
-              {t('wsReloadWorkspace')}
-            </a>
+        <div role="status" className="workspace-readout">
+          <p className="workspace-status">{t('wsProfileCreated')}</p>
+          <div className="workspace-readout-row">
+            <span className="workspace-readout-label">
+              {t('wsExternalReference')}
+            </span>
+            <span className="workspace-readout-value">
+              {result.externalReference}
+            </span>
+          </div>
+          <div className="workspace-readout-row">
+            <span className="workspace-readout-label">
+              {t('wsProjectLabel')} · {t('wsProfileLabel')}
+            </span>
+            <span className="workspace-readout-value">
+              {result.projectId} · {result.profileId}
+            </span>
+          </div>
+          <div className="workspace-readout-row">
+            <span className="workspace-readout-label">{t('wsCreatedAt')}</span>
+            <span className="workspace-readout-value">{result.createdAt}</span>
+          </div>
+          <p className="workspace-meta">
+            <a href={`?projectId=${projectId}`}>{t('wsReloadWorkspace')}</a>
           </p>
         </div>
       )}
@@ -208,6 +220,7 @@ export function ProfileOnboardingForm({ projectId }: { projectId: string }) {
           definition; locale never changes its meaning. */}
       <aside
         role="note"
+        className="workspace-note"
         aria-label={t('wsProfileIdentityDisclosureLabel')}
       >
         <p>{t('wsProfileIdentityDisclosure')}</p>
@@ -218,6 +231,7 @@ export function ProfileOnboardingForm({ projectId }: { projectId: string }) {
           code; the server constant remains the machine/API authority. */}
       <aside
         role="note"
+        className="scientific-disclosure"
         data-disclosure={SCIENTIFIC_DISCLOSURE_CODE}
         aria-label={t('disclosureLabel')}
       >

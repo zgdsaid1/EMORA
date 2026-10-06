@@ -142,12 +142,14 @@ export function TransitionForm({
   }
 
   return (
-    <section>
-      <h2>{t('wsSubmitEvent')}</h2>
-      <form onSubmit={submit}>
+    <section className="workspace-section">
+      <div className="workspace-section-heading">
+        <h2>{t('wsSubmitEvent')}</h2>
+      </div>
+      <form className="workspace-form" onSubmit={submit}>
         {EVENT_FIELDS.map((field) => (
-          <label key={field.name}>
-            {t(field.labelKey)}
+          <label className="workspace-field" key={field.name}>
+            <span className="workspace-field-label">{t(field.labelKey)}</span>
             <input
               name={field.name}
               type="number"
@@ -159,65 +161,78 @@ export function TransitionForm({
             />
           </label>
         ))}
-        <label>
-          {t('wsContextOptional')}
+        <label className="workspace-field">
+          <span className="workspace-field-label">{t('wsContextOptional')}</span>
           <textarea name="context" rows={3} />
         </label>
-        <button type="submit" disabled={pending}>
-          {pending ? t('wsComputing') : t('wsRunTransition')}
-        </button>
+        <div className="workspace-actions">
+          <button className="workspace-button" type="submit" disabled={pending}>
+            {pending ? t('wsComputing') : t('wsRunTransition')}
+          </button>
+        </div>
       </form>
 
-      {error && <p role="alert">{error}</p>}
+      {error && <p role="alert" className="workspace-error">{error}</p>}
 
       {result && (
-        <div>
-          <h2>{t('wsResultHeading')}</h2>
+        <div className="workspace-readout">
+          <h3 className="workspace-readout-heading">{t('wsResultHeading')}</h3>
           {result.duplicate && (
-            <p role="status">{t('wsDuplicate')}</p>
+            <p role="status" className="workspace-status">{t('wsDuplicate')}</p>
           )}
-          <p>
-            <strong>{t('wsEmotionVector')}</strong>
-          </p>
-          <ul>
-            {EMOTION_LABELS.map((emotion) => (
-              <li key={emotion}>
-                {t(EMOTION_LABEL_KEYS[emotion])}:{' '}
+          <h3 className="workspace-readout-heading">{t('wsEmotionVector')}</h3>
+          {EMOTION_LABELS.map((emotion) => (
+            <div key={emotion} className="workspace-readout-row">
+              <span className="workspace-readout-label">
+                {t(EMOTION_LABEL_KEYS[emotion])}
+              </span>
+              <span className="workspace-readout-value">
                 {result.emotionVector[emotion]?.toFixed(4)}
-              </li>
-            ))}
-          </ul>
-          <p>
-            <strong>{t('wsDimensions')}</strong>
-          </p>
-          <ul>
-            {DIMENSION_LABELS.map((dimension) => (
-              <li key={dimension.key}>
-                {t(dimension.labelKey)}:{' '}
+              </span>
+            </div>
+          ))}
+
+          <h3 className="workspace-readout-heading">{t('wsDimensions')}</h3>
+          {DIMENSION_LABELS.map((dimension) => (
+            <div key={dimension.key} className="workspace-readout-row">
+              <span className="workspace-readout-label">
+                {t(dimension.labelKey)}
+              </span>
+              <span className="workspace-readout-value">
                 {result.dimensions[dimension.key].toFixed(4)}
-              </li>
-            ))}
-          </ul>
-          <p>
-            <strong>{t('wsModelIdentity')}</strong>
-          </p>
-          <ul>
-            <li>
-              {t('name')}: {result.modelIdentity.name}
-            </li>
-            <li>
-              {t('wsVersion')}: {result.modelIdentity.version}
-            </li>
-            <li>
-              {t('wsProvider')}: {result.modelIdentity.providerIdentifier} (
+              </span>
+            </div>
+          ))}
+
+          <h3 className="workspace-readout-heading">{t('wsModelIdentity')}</h3>
+          <div className="workspace-readout-row">
+            <span className="workspace-readout-label">{t('name')}</span>
+            <span className="workspace-readout-value">
+              {result.modelIdentity.name}
+            </span>
+          </div>
+          <div className="workspace-readout-row">
+            <span className="workspace-readout-label">{t('wsVersion')}</span>
+            <span className="workspace-readout-value">
+              {result.modelIdentity.version}
+            </span>
+          </div>
+          <div className="workspace-readout-row">
+            <span className="workspace-readout-label">{t('wsProvider')}</span>
+            <span className="workspace-readout-value">
+              {result.modelIdentity.providerIdentifier} (
               {result.modelIdentity.providerVersion})
-            </li>
-          </ul>
-          <p>
-            <strong>{t('wsParameterIdentity')}</strong>:{' '}
-            {result.parameterIdentity}
-          </p>
-          <p>
+            </span>
+          </div>
+          <div className="workspace-readout-row">
+            <span className="workspace-readout-label">
+              {t('wsParameterIdentity')}
+            </span>
+            <span className="workspace-readout-value">
+              <code>{result.parameterIdentity}</code>
+            </span>
+          </div>
+          <p className="workspace-meta">
             {t('wsEvent')} {result.eventId} · {t('wsState')} {result.stateId} ·{' '}
             {result.timestamp}
           </p>
@@ -229,6 +244,7 @@ export function TransitionForm({
           code; the server constant remains the machine/API authority. */}
       <aside
         role="note"
+        className="scientific-disclosure"
         data-disclosure={SCIENTIFIC_DISCLOSURE_CODE}
         aria-label={t('disclosureLabel')}
       >

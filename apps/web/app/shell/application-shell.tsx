@@ -262,7 +262,6 @@ function GlobalContextBar({ context }: { context: ResearchContext }) {
         <ContextValue label={t('experiment')} value={t('unknown')} />
         <ContextValue label={t('session')} value={t('unknown')} />
         <ContextValue label={t('modelVersion')} value={t('unknown')} />
-        <ContextValue label={t('systemStatus')} value={t('unknown')} />
       </div>
       <span className="context-stamp">
         {timestamp ? <time dateTime={timestamp}>{timestamp.slice(0, 16)} UTC</time> : t('unknown')}
@@ -378,12 +377,6 @@ function Sidebar({
             );
           })}
         </nav>
-        {!isCollapsed && (
-          <div className="sidebar-footer">
-            <span className="status-led" aria-hidden="true" />
-            <span>{t('systemStatus')}: {t('unknown')}</span>
-          </div>
-        )}
       </aside>
     </>
   );
