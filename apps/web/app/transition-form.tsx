@@ -3,11 +3,9 @@
 import { FormEvent, useState } from 'react';
 
 import { handleUnauthorizedResponse } from './session-recovery';
+import { usePreferences } from './shell/preferences';
 
-import {
-  SCIENTIFIC_DISCLOSURE_CODE,
-  SCIENTIFIC_DISCLOSURE_TEXT,
-} from '../server/transitions/disclosure';
+import { SCIENTIFIC_DISCLOSURE_CODE } from '../server/transitions/disclosure';
 
 interface TransitionResponse {
   readonly requestId: string;
@@ -46,12 +44,29 @@ const EMOTION_LABELS = [
   'joy',
 ] as const;
 
+/** Presentation labels keyed by the canonical machine token. */
+const EMOTION_LABEL_KEYS = {
+  love: 'wsEmotionLove',
+  fear: 'wsEmotionFear',
+  nostalgia: 'wsEmotionNostalgia',
+  jealousy: 'wsEmotionJealousy',
+  trust: 'wsEmotionTrust',
+  anger: 'wsEmotionAnger',
+  joy: 'wsEmotionJoy',
+} as const;
+
+const DIMENSION_LABELS = [
+  { key: 'valence', labelKey: 'wsDimValence' },
+  { key: 'arousal', labelKey: 'wsDimArousal' },
+  { key: 'intensity', labelKey: 'wsDimIntensity' },
+] as const;
+
 const EVENT_FIELDS = [
-  { name: 'valence', label: 'Valence (-1 to 1)', min: -1, max: 1 },
-  { name: 'intensity', label: 'Intensity (0 to 1)', min: 0, max: 1 },
-  { name: 'relevance', label: 'Relevance (0 to 1)', min: 0, max: 1 },
-  { name: 'surprise', label: 'Surprise (0 to 1)', min: 0, max: 1 },
-  { name: 'uncertainty', label: 'Uncertainty (0 to 1)', min: 0, max: 1 },
+  { name: 'valence', labelKey: 'wsFieldValence', min: -1, max: 1 },
+  { name: 'intensity', labelKey: 'wsFieldIntensity', min: 0, max: 1 },
+  { name: 'relevance', labelKey: 'wsFieldRelevance', min: 0, max: 1 },
+  { name: 'surprise', labelKey: 'wsFieldSurprise', min: 0, max: 1 },
+  { name: 'uncertainty', labelKey: 'wsFieldUncertainty', min: 0, max: 1 },
 ] as const;
 
 export function TransitionForm({
@@ -61,6 +76,7 @@ export function TransitionForm({
   projectId: string;
   profileId: string;
 }) {
+  const { t } = usePreferences();
   const [result, setResult] = useState<TransitionResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
@@ -80,7 +96,7 @@ export function TransitionForm({
         try {
           payload.context = JSON.parse(contextText);
         } catch {
-          setError('Context must be valid JSON.');
+          setError(t('wsContextInvalid'));
           return;
         }
       }
@@ -113,13 +129,13 @@ export function TransitionForm({
         setResult(null);
         setError(
           (body as { error?: { message?: string } }).error?.message ??
-            'The transition could not be completed.',
+            t('wsTransitionFailed'),
         );
         return;
       }
       setResult(body as TransitionResponse);
     } catch {
-      setError('The transition could not be completed.');
+      setError(t('wsTransitionFailed'));
     } finally {
       setPending(false);
     }
@@ -127,11 +143,11 @@ export function TransitionForm({
 
   return (
     <section>
-      <h2>Submit a structured event</h2>
+      <h2>{t('wsSubmitEvent')}</h2>
       <form onSubmit={submit}>
         {EVENT_FIELDS.map((field) => (
           <label key={field.name}>
-            {field.label}
+            {t(field.labelKey)}
             <input
               name={field.name}
               type="number"
@@ -144,11 +160,11 @@ export function TransitionForm({
           </label>
         ))}
         <label>
-          Context (optional JSON)
+          {t('wsContextOptional')}
           <textarea name="context" rows={3} />
         </label>
         <button type="submit" disabled={pending}>
-          {pending ? 'Computing...' : 'Run deterministic transition'}
+          {pending ? t('wsComputing') : t('wsRunTransition')}
         </button>
       </form>
 
@@ -156,55 +172,67 @@ export function TransitionForm({
 
       {result && (
         <div>
-          <h2>Computational model-estimated state</h2>
+          <h2>{t('wsResultHeading')}</h2>
           {result.duplicate && (
-            <p role="status">Previously persisted result.</p>
+            <p role="status">{t('wsDuplicate')}</p>
           )}
           <p>
-            <strong>Emotion vector</strong>
+            <strong>{t('wsEmotionVector')}</strong>
           </p>
           <ul>
             {EMOTION_LABELS.map((emotion) => (
               <li key={emotion}>
-                {emotion}: {result.emotionVector[emotion]?.toFixed(4)}
+                {t(EMOTION_LABEL_KEYS[emotion])}:{' '}
+                {result.emotionVector[emotion]?.toFixed(4)}
               </li>
             ))}
           </ul>
           <p>
-            <strong>Dimensions</strong>
+            <strong>{t('wsDimensions')}</strong>
           </p>
           <ul>
-            <li>valence: {result.dimensions.valence.toFixed(4)}</li>
-            <li>arousal: {result.dimensions.arousal.toFixed(4)}</li>
-            <li>intensity: {result.dimensions.intensity.toFixed(4)}</li>
+            {DIMENSION_LABELS.map((dimension) => (
+              <li key={dimension.key}>
+                {t(dimension.labelKey)}:{' '}
+                {result.dimensions[dimension.key].toFixed(4)}
+              </li>
+            ))}
           </ul>
           <p>
-            <strong>Model identity</strong>
+            <strong>{t('wsModelIdentity')}</strong>
           </p>
           <ul>
-            <li>name: {result.modelIdentity.name}</li>
-            <li>version: {result.modelIdentity.version}</li>
             <li>
-              provider: {result.modelIdentity.providerIdentifier} (
+              {t('name')}: {result.modelIdentity.name}
+            </li>
+            <li>
+              {t('wsVersion')}: {result.modelIdentity.version}
+            </li>
+            <li>
+              {t('wsProvider')}: {result.modelIdentity.providerIdentifier} (
               {result.modelIdentity.providerVersion})
             </li>
           </ul>
           <p>
-            <strong>Parameter identity</strong>: {result.parameterIdentity}
+            <strong>{t('wsParameterIdentity')}</strong>:{' '}
+            {result.parameterIdentity}
           </p>
           <p>
-            event {result.eventId} · state {result.stateId} · {result.timestamp}
+            {t('wsEvent')} {result.eventId} · {t('wsState')} {result.stateId} ·{' '}
+            {result.timestamp}
           </p>
         </div>
       )}
 
-      {/* Persistent, non-dismissible scientific disclosure. */}
+      {/* Persistent, non-dismissible scientific disclosure. The visible text
+          is the presentation translation keyed by the canonical disclosure
+          code; the server constant remains the machine/API authority. */}
       <aside
         role="note"
         data-disclosure={SCIENTIFIC_DISCLOSURE_CODE}
-        aria-label="Scientific disclosure"
+        aria-label={t('disclosureLabel')}
       >
-        <p>{SCIENTIFIC_DISCLOSURE_TEXT}</p>
+        <p>{t('disclosureText')}</p>
       </aside>
     </section>
   );

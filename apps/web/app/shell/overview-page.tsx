@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 
-import { SCIENTIFIC_DISCLOSURE_CODE, SCIENTIFIC_DISCLOSURE_TEXT } from '../../server/transitions/disclosure';
+import { SCIENTIFIC_DISCLOSURE_CODE } from '../../server/transitions/disclosure';
 import { navigationCatalog, allNavigationItems } from './catalog';
 import { ScientificBreadcrumbs } from './primitives';
 import { usePreferences } from './preferences';
@@ -75,7 +75,7 @@ export function OverviewPage() {
         role="note"
       >
         <strong>{t('disclosureHeading')}</strong>
-        <p>{SCIENTIFIC_DISCLOSURE_TEXT}</p>
+        <p>{t('disclosureText')}</p>
       </aside>
     </main>
   );

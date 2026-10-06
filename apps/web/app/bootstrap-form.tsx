@@ -3,6 +3,7 @@
 import { FormEvent, useState } from 'react';
 
 import { handleUnauthorizedResponse } from './session-recovery';
+import { usePreferences } from './shell/preferences';
 
 interface BootstrapResponse {
   readonly requestId: string;
@@ -15,6 +16,7 @@ interface BootstrapResponse {
 }
 
 export function BootstrapForm() {
+  const { t } = usePreferences();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -53,14 +55,14 @@ export function BootstrapForm() {
       if (!response.ok) {
         setError(
           (body as { error?: { message?: string } }).error?.message ??
-            'The workspace could not be initialized.',
+            t('wsWorkspaceInitFailed'),
         );
         return;
       }
 
       window.location.assign('/app');
     } catch {
-      setError('The workspace could not be initialized.');
+      setError(t('wsWorkspaceInitFailed'));
     } finally {
       setPending(false);
     }
@@ -69,11 +71,11 @@ export function BootstrapForm() {
   return (
     <form onSubmit={submit}>
       <label>
-        Organization name
+        {t('wsOrganizationName')}
         <input name="organizationName" type="text" required />
       </label>
       <label>
-        Organization slug
+        {t('wsOrganizationSlug')}
         <input
           name="organizationSlug"
           type="text"
@@ -82,11 +84,11 @@ export function BootstrapForm() {
         />
       </label>
       <label>
-        Initial project name
+        {t('wsProjectName')}
         <input name="projectName" type="text" required />
       </label>
       <label>
-        Initial project slug
+        {t('wsProjectSlug')}
         <input
           name="projectSlug"
           type="text"
@@ -95,7 +97,7 @@ export function BootstrapForm() {
         />
       </label>
       <button type="submit" disabled={pending}>
-        {pending ? 'Creating workspace...' : 'Create workspace'}
+        {pending ? t('wsCreatingWorkspace') : t('wsCreateWorkspace')}
       </button>
       {error && <p role="alert">{error}</p>}
     </form>

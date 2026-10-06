@@ -13,16 +13,15 @@ import {
   FileText,
   FlaskConical,
   Gauge,
+  Globe,
   Menu,
-  Monitor,
-  Moon,
   PanelLeftClose,
   PanelLeftOpen,
   Search,
   Settings,
   Shapes,
   Sliders,
-  Sun,
+  SunMoon,
   Telescope,
   Users,
   Workflow,
@@ -103,7 +102,8 @@ function LocaleControl() {
   const { locale, setLocale, t } = usePreferences();
 
   return (
-    <label className="shell-control">
+    <label className="shell-control" title={`${t('language')}: ${locale.toUpperCase()}`}>
+      <Globe aria-hidden="true" size={16} strokeWidth={1.7} />
       <span className="sr-only">{t('language')}</span>
       <select
         aria-label={t('language')}
@@ -120,27 +120,22 @@ function LocaleControl() {
 
 function AppearanceControl() {
   const { appearance, setAppearance, t } = usePreferences();
-  const modes = [
-    { value: 'light', key: 'light' as const, Icon: Sun },
-    { value: 'dark', key: 'dark' as const, Icon: Moon },
-    { value: 'system', key: 'system' as const, Icon: Monitor },
-  ];
+  // Same three modes and persistence as before; one icon cycles through them.
+  const order = ['light', 'dark', 'system'] as const;
+  const next = order[(order.indexOf(appearance) + 1) % order.length];
+  const label = `${t('appearance')}: ${t(appearance)}`;
 
   return (
-    <div className="appearance-control" role="group" aria-label={t('appearance')}>
-      {modes.map(({ value, key, Icon }) => (
-        <button
-          aria-label={t(key)}
-          aria-pressed={appearance === value}
-          className="icon-button"
-          key={value}
-          onClick={() => setAppearance(value as 'light' | 'dark' | 'system')}
-          title={t(key)}
-          type="button"
-        >
-          <Icon aria-hidden="true" size={16} strokeWidth={1.7} />
-        </button>
-      ))}
+    <div className="appearance-control">
+      <button
+        aria-label={label}
+        className="icon-button"
+        onClick={() => setAppearance(next)}
+        title={`${label} → ${t(next)}`}
+        type="button"
+      >
+        <SunMoon aria-hidden="true" size={16} strokeWidth={1.7} />
+      </button>
     </div>
   );
 }
@@ -307,8 +302,13 @@ function Sidebar({
         className={`app-sidebar${isCollapsed ? ' is-collapsed' : ''}${mobileOpen ? ' is-mobile-open' : ''}`}
       >
         <div className="sidebar-heading">
-          <Link aria-label="EMORA — overview" className="brand-lockup" href="/" onClick={onMobileClose}>
-            <span aria-hidden="true" className="brand-mark">E</span>
+          <Link
+            aria-label={`EMORA — ${t('overview')}`}
+            className="brand-lockup"
+            href="/"
+            onClick={onMobileClose}
+          >
+            <span aria-hidden="true" className="brand-mark">Σ</span>
             {!isCollapsed && (
               <span className="brand-copy">
                 <strong>EMORA</strong>
@@ -417,7 +417,7 @@ export function ApplicationShell({ children }: { children: ReactNode }) {
       <div className="auth-frame">
         <header className="auth-frame-header">
           <Link className="auth-brand" href="/">
-            <span aria-hidden="true" className="brand-mark">E</span>
+            <span aria-hidden="true" className="brand-mark">Σ</span>
             <span>EMORA</span>
           </Link>
           <div className="shell-toolbar">
@@ -454,7 +454,7 @@ export function ApplicationShell({ children }: { children: ReactNode }) {
               <button className="command-trigger" onClick={() => setCommandOpen(true)} type="button">
                 <Search aria-hidden="true" size={15} />
                 <span>{t('commandSearch')}</span>
-                <kbd><Command aria-label="Command" size={11} /> K</kbd>
+                <kbd><Command aria-label={t('commandKey')} size={11} /> K</kbd>
               </button>
               <AppearanceControl />
               <LocaleControl />

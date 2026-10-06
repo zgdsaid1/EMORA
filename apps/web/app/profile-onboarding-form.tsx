@@ -3,11 +3,9 @@
 import { FormEvent, useState } from 'react';
 
 import { handleUnauthorizedResponse } from './session-recovery';
+import { usePreferences } from './shell/preferences';
 
-import {
-  SCIENTIFIC_DISCLOSURE_CODE,
-  SCIENTIFIC_DISCLOSURE_TEXT,
-} from '../server/transitions/disclosure';
+import { SCIENTIFIC_DISCLOSURE_CODE } from '../server/transitions/disclosure';
 
 /**
  * A2 profile onboarding: create one project-scoped profile through the frozen
@@ -20,26 +18,18 @@ import {
  */
 
 /**
- * Frozen profile identity disclosure. Wording is byte-identical to the
- * workspace surface (apps/web/app/app/page.tsx); verified by
- * profile-onboarding-form.test.ts.
- */
-const PROFILE_IDENTITY_DISCLOSURE =
-  'This profile is a model-configuration record used for computation; it is not a psychological assessment of a person.' as const;
-
-/**
  * Mirrors the frozen transport bounds of the profile creation contract
  * (1-128 printable ASCII). UX feedback only; the server re-checks.
  */
 const EXTERNAL_REFERENCE_PATTERN = /^[\x20-\x7e]+$/;
 
 const PROFILE_FIELDS = [
-  { name: 'emotionalSensitivity', label: 'Emotional sensitivity (0 to 1)' },
-  { name: 'baselineTrust', label: 'Baseline trust (0 to 1)' },
-  { name: 'baselineAnxiety', label: 'Baseline anxiety (0 to 1)' },
-  { name: 'attachmentSensitivity', label: 'Attachment sensitivity (0 to 1)' },
-  { name: 'nostalgiaSensitivity', label: 'Nostalgia sensitivity (0 to 1)' },
-  { name: 'jealousySensitivity', label: 'Jealousy sensitivity (0 to 1)' },
+  { name: 'emotionalSensitivity', labelKey: 'wsFieldEmotionalSensitivity' },
+  { name: 'baselineTrust', labelKey: 'wsFieldBaselineTrust' },
+  { name: 'baselineAnxiety', labelKey: 'wsFieldBaselineAnxiety' },
+  { name: 'attachmentSensitivity', labelKey: 'wsFieldAttachmentSensitivity' },
+  { name: 'nostalgiaSensitivity', labelKey: 'wsFieldNostalgiaSensitivity' },
+  { name: 'jealousySensitivity', labelKey: 'wsFieldJealousySensitivity' },
 ] as const;
 
 interface ProfileCreateResponse {
@@ -51,6 +41,7 @@ interface ProfileCreateResponse {
 }
 
 export function ProfileOnboardingForm({ projectId }: { projectId: string }) {
+  const { t } = usePreferences();
   const [result, setResult] = useState<ProfileCreateResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
@@ -66,11 +57,11 @@ export function ProfileOnboardingForm({ projectId }: { projectId: string }) {
 
     const externalReference = String(formData.get('externalReference') ?? '');
     if (externalReference.length < 1 || externalReference.length > 128) {
-      setError('External reference must be 1 to 128 characters.');
+      setError(t('wsExtRefLength'));
       return;
     }
     if (!EXTERNAL_REFERENCE_PATTERN.test(externalReference)) {
-      setError('External reference may contain printable characters only.');
+      setError(t('wsExtRefPrintable'));
       return;
     }
 
@@ -89,12 +80,12 @@ export function ProfileOnboardingForm({ projectId }: { projectId: string }) {
           parsed === null ||
           Array.isArray(parsed)
         ) {
-          setError('Additional traits must be a JSON object.');
+          setError(t('wsTraitsObject'));
           return;
         }
         additionalTraits = parsed as Record<string, number>;
       } catch {
-        setError('Additional traits must be a JSON object.');
+        setError(t('wsTraitsObject'));
         return;
       }
     }
@@ -127,13 +118,13 @@ export function ProfileOnboardingForm({ projectId }: { projectId: string }) {
       if (!response.ok) {
         setError(
           (body as { error?: { message?: string } }).error?.message ??
-            'The profile could not be created.',
+            t('wsProfileCreateFailed'),
         );
         return;
       }
       setResult(body as ProfileCreateResponse);
     } catch {
-      setError('The profile could not be created.');
+      setError(t('wsProfileCreateFailed'));
     } finally {
       setPending(false);
     }
@@ -141,14 +132,11 @@ export function ProfileOnboardingForm({ projectId }: { projectId: string }) {
 
   return (
     <section>
-      <h2>Create a profile</h2>
-      <p>
-        A profile is a model-configuration record used for computation. Create
-        one for this project below.
-      </p>
+      <h2>{t('wsCreateProfile')}</h2>
+      <p>{t('wsCreateProfileIntro')}</p>
       <form onSubmit={submit}>
         <label>
-          External reference
+          {t('wsExternalReference')}
           <input
             name="externalReference"
             type="text"
@@ -157,13 +145,13 @@ export function ProfileOnboardingForm({ projectId }: { projectId: string }) {
             required
           />
         </label>
-        <p>1 to 128 printable characters, unique within this project.</p>
+        <p>{t('wsExternalReferenceHint')}</p>
 
         <fieldset>
-          <legend>Model configuration</legend>
+          <legend>{t('wsModelConfiguration')}</legend>
           {PROFILE_FIELDS.map((field) => (
             <label key={field.name}>
-              {field.label}
+              {t(field.labelKey)}
               <input
                 name={field.name}
                 type="number"
@@ -178,17 +166,17 @@ export function ProfileOnboardingForm({ projectId }: { projectId: string }) {
         </fieldset>
 
         <label>
-          Additional traits (optional JSON object)
+          {t('wsAdditionalTraits')}
           <textarea
             name="additionalTraits"
             rows={3}
             placeholder={'{"name": 0.5}'}
           />
         </label>
-        <p>Metadata only; never consumed by the deterministic dynamics.</p>
+        <p>{t('wsAdditionalTraitsHint')}</p>
 
         <button type="submit" disabled={pending}>
-          {pending ? 'Creating...' : 'Create profile'}
+          {pending ? t('wsCreatingProfile') : t('wsCreateProfileAction')}
         </button>
       </form>
 
@@ -196,32 +184,44 @@ export function ProfileOnboardingForm({ projectId }: { projectId: string }) {
 
       {result && (
         <div role="status">
-          <p>Profile created.</p>
-          <p>External reference: {result.externalReference}</p>
+          <p>{t('wsProfileCreated')}</p>
           <p>
-            Project {result.projectId} · profile {result.profileId}
+            {t('wsExternalReference')}: {result.externalReference}
           </p>
-          <p>Created at {result.createdAt}</p>
+          <p>
+            {t('wsProjectLabel')} {result.projectId} ·{' '}
+            {t('wsProfileLabel')} {result.profileId}
+          </p>
+          <p>
+            {t('wsCreatedAt')} {result.createdAt}
+          </p>
           <p>
             <a href={`?projectId=${projectId}`}>
-              Reload the workspace to see the new profile.
+              {t('wsReloadWorkspace')}
             </a>
           </p>
         </div>
       )}
 
-      {/* Persistent, non-dismissible profile identity disclosure. */}
-      <aside role="note" aria-label="Profile identity disclosure">
-        <p>{PROFILE_IDENTITY_DISCLOSURE}</p>
+      {/* Persistent, non-dismissible profile identity disclosure. The
+          presentation translation keys the frozen English semantic
+          definition; locale never changes its meaning. */}
+      <aside
+        role="note"
+        aria-label={t('wsProfileIdentityDisclosureLabel')}
+      >
+        <p>{t('wsProfileIdentityDisclosure')}</p>
       </aside>
 
-      {/* Persistent, non-dismissible scientific disclosure. */}
+      {/* Persistent, non-dismissible scientific disclosure. The visible text
+          is the presentation translation keyed by the canonical disclosure
+          code; the server constant remains the machine/API authority. */}
       <aside
         role="note"
         data-disclosure={SCIENTIFIC_DISCLOSURE_CODE}
-        aria-label="Scientific disclosure"
+        aria-label={t('disclosureLabel')}
       >
-        <p>{SCIENTIFIC_DISCLOSURE_TEXT}</p>
+        <p>{t('disclosureText')}</p>
       </aside>
     </section>
   );
