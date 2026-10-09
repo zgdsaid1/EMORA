@@ -552,4 +552,35 @@ This classification is the mandatory first step before any implementation.
 
 ---
 
+## 39. Related governance documents
+
+- [`docs/audits/engine-capability-scientific-workspace-gap-audit.md`](../audits/engine-capability-scientific-workspace-gap-audit.md) —
+  Engine Capability & Scientific Workspace Gap Audit
+  (`ENGINE_AUDIT_COMPLETE_WITH_FINDINGS`) — the ENGINE TRACK governance baseline.
+- E1-B implementation: the `@emora/contract` package defines an internal-only
+  Machine Consumption Contract with `contractVersion` fixed to `1.0.0` for this
+  implementation. It is provided as the internal workspace package
+  `packages/emora-contract` and is not imported or consumed by the application
+  runtime. It is not a public API: the transition HTTP response retains
+  its existing flat fields and does not expose `machineContract`. The contract
+  excludes `requestDigest`; internal digest, canonicalization, and idempotency
+  behavior remain separate and unchanged. The current parameter identity is
+  `DEFAULT_DETERMINISTIC_MODEL_PARAMETERS`, not a `parameter_versions`
+  activation id.
+
+  Historical reported validation evidence (October 9, 2026), not freshly run for this closure:
+  contract test 8/8; route tests 14/14; validation tests 18/18; contract package
+  typecheck and lint; and web typecheck were reported passed. Draft 2020-12 contract
+  validation uses Ajv 8.20.0; ESLint retains Ajv 6.15.0. Database-backed
+  integration and replay tests were not run in the latest audit. Separately,
+  isolated package-level checks (frozen-lockfile install, 8/8 package tests,
+  typecheck, lint) were freshly executed on 2026-10-09 in clean copies;
+  repository-wide validation (route tests, validation tests, web typecheck,
+  database-backed tests, CI) was not freshly executed. E1-B CLOSED,
+  effective October 9, 2026, by explicit project-owner authorization in this
+  conversation. Basis: `E1_B_GOVERNANCE_CLOSURE_REVIEW_READY_FOR_DECISION`. The
+  contract remains internal-only: no public machineContract field or endpoint; requestDigest is excluded; internal canonicalization, digest/hash, idempotency, and canonical scientific disclosure remain unchanged. Version 1.0.0 is not frozen or production-approved; no scientific, psychological, or clinical validation is implied.
+
+---
+
 *This document is a status/governance artifact, not an executable specification. It does not change application behavior, equations, database schema, Auth/RBAC, RLS, scientific disclosure, or infrastructure, and it does not activate ML, Memory, RAG, or SaaS.*

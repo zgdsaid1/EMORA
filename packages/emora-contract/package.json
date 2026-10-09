@@ -1,0 +1,21 @@
+{
+  "name": "@emora/contract",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Language-neutral EMORA machine-consumption contract and TypeScript serializer.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./schema": "./schema/machine-contract-v1.schema.json"
+  },
+  "scripts": {
+    "build": "tsc --noEmit",
+    "lint": "eslint src",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "ajv": "8.20.0",
+    "ajv-formats": "3.0.1"
+  }
+}
