@@ -1,7 +1,7 @@
 # EMORA E1-B Machine Contract — Governance Decision Record
 
 - **Decision status:** `E1-B CLOSED` for the internal machine-contract foundation only.
-- **Implementation status:** Implemented; validation evidence and its limitations are recorded below. Formal closure was explicitly authorized by the project owner on 2026-10-09.
+- **Implementation status:** Implemented in the local working tree; uncommitted and not integrated into main as of this record. Validation evidence and its limitations are recorded below. Formal closure was explicitly authorized by the project owner on 2026-10-09.
 - **Date prepared:** 2026-10-08
 - **Historical design-review outcome:** `BLOCKED_BY_TECHNICAL_FINDINGS` before the approved package-scoped dependency resolution and version clarification.
 - **Scope:** Internal reusable machine-contract package, schema, serializer, tests, and accurate documentation. Public API exposure, endpoint creation, database operations, and production changes are not authorized.
@@ -107,7 +107,7 @@ Integration suites must remain explicitly opted in, use a validated loopback `TE
 Implementation and validation checklist:
 
 - [x] Owner approval is recorded for the internal field set, disclosure, non-exposure, schema dialect target, additional-properties policy, digest exclusion, and parameter semantics.
-- [x] The `@emora/contract` workspace package, pinned validator dependencies, and package importer are present in the workspace/lockfile.
+- [x] The `@emora/contract` workspace package, pinned validator dependencies, and package importer are present in the workspace/lockfile (local working tree; uncommitted).
 - [x] Draft 2020-12 schema and focused Ajv 8.20.0/ajv-formats tests have been implemented; test/typecheck/lint results are recorded in the implementation report.
 - [x] Existing HTTP response fields, names, values, and meanings remain unchanged; `machineContract` is absent and no endpoint is added.
 - [x] Contract disclosure is tested against the canonical server source.

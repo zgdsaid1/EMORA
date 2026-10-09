@@ -559,7 +559,9 @@ This classification is the mandatory first step before any implementation.
   (`ENGINE_AUDIT_COMPLETE_WITH_FINDINGS`) — the ENGINE TRACK governance baseline.
 - E1-B implementation: the `@emora/contract` package defines an internal-only
   Machine Consumption Contract with `contractVersion` fixed to `1.0.0` for this
-  implementation. It is not a public API: the transition HTTP response retains
+  implementation. As of this record, that implementation exists in the local
+  working tree only; it is not committed to the branch or integrated into main
+  or the application runtime. It is not a public API: the transition HTTP response retains
   its existing flat fields and does not expose `machineContract`. The contract
   excludes `requestDigest`; internal digest, canonicalization, and idempotency
   behavior remain separate and unchanged. The current parameter identity is
