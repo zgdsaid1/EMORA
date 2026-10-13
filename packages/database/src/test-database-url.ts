@@ -1,7 +1,7 @@
 /** The authoritative EMORA Production Supabase project. Test URLs must reject it. */
 export const PRODUCTION_SUPABASE_PROJECT_REF = 'uxewqvkzcjznmapveuiv';
 
-const TEST_DATABASE_NAME = 'emora_test';
+export const TEST_DATABASE_NAME = 'emora_test';
 const LOOPBACK_HOSTS = new Set(['localhost', '127.0.0.1', '::1']);
 const TEST_DATABASE_PORTS = new Set(['5432', '5433']);
 const DISABLED_TEST_DATABASE_URL =
@@ -29,7 +29,9 @@ export function validateTestDatabaseUrl(value: string | undefined): string {
   try {
     url = new URL(value);
   } catch {
-    throw new UnsafeTestDatabaseUrlError('TEST_DATABASE_URL is not a valid URL.');
+    throw new UnsafeTestDatabaseUrlError(
+      'TEST_DATABASE_URL is not a valid URL.',
+    );
   }
 
   if (url.protocol !== 'postgres:' && url.protocol !== 'postgresql:') {
@@ -111,7 +113,14 @@ export function resolveTestDatabaseUrl(input: {
 export function databaseIntegrationRequested(
   environment: Readonly<Record<string, string | undefined>>,
 ): boolean {
-  return environment.EMORA_RUN_DB_INTEGRATION === '1';
+  const flag = environment.EMORA_RUN_DB_INTEGRATION;
+  if (flag === undefined || flag === '') return false;
+  if (flag !== '1') {
+    throw new UnsafeTestDatabaseUrlError(
+      'EMORA_RUN_DB_INTEGRATION must be exactly "1" when set.',
+    );
+  }
+  return true;
 }
 
 /**

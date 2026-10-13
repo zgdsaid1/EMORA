@@ -44,6 +44,8 @@ jobs:
           psql -v ON_ERROR_STOP=1 -U emora -d postgres
           -c "CREATE DATABASE emora_test OWNER emora"
       - run: pnpm --filter @emora/database db:migrate:test
+      - name: Verify database integration CI wiring
+        run: pnpm --filter @emora/database exec vitest run src/integration-selectors.test.ts --reporter=verbose
       - run: pnpm lint
       - run: pnpm typecheck
       - name: Run unit and database integration suites

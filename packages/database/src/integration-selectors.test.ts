@@ -35,6 +35,310 @@ const VITEST_CONFIGS = [
 const sourceFiles = inventorySourceFiles(REPOSITORY_ROOT);
 const testSources = sourceFiles.filter(({ path }) => isTestSource(path));
 
+interface WorkflowStep {
+  readonly name: string;
+  readonly run: string;
+}
+
+function indentation(line: string): number {
+  return line.match(/^ */)?.[0].length ?? 0;
+}
+
+function workflowJobSource(workflow: string, jobName: string): string {
+  const lines = workflow.split(/\r?\n/);
+  const start = lines.findIndex((line) => line === `  ${jobName}:`);
+  if (start < 0) return '';
+
+  const end = lines.findIndex(
+    (line, index) => index > start && /^ {2}[\w-]+:/.test(line),
+  );
+  return lines
+    .slice(start, end < 0 ? undefined : end)
+    .filter((line) => !/^\s*#/.test(line))
+    .join('\n');
+}
+
+function workflowJobSteps(workflow: string, jobName: string): WorkflowStep[] {
+  const lines = workflow.split(/\r?\n/);
+  const jobStart = lines.findIndex((line) => line === `  ${jobName}:`);
+  if (jobStart < 0) return [];
+
+  const jobEnd = lines.findIndex(
+    (line, index) => index > jobStart && /^ {2}[\w-]+:/.test(line),
+  );
+  const jobLines = lines.slice(jobStart, jobEnd < 0 ? undefined : jobEnd);
+  const stepsIndex = jobLines.findIndex((line) => line === '    steps:');
+  if (stepsIndex < 0) return [];
+
+  const steps: WorkflowStep[] = [];
+  let index = stepsIndex + 1;
+  while (index < jobLines.length) {
+    const stepStart = jobLines[index];
+    if (indentation(stepStart) <= 4 && stepStart.trim() !== '') break;
+    if (/^\s*#/.test(stepStart) || !/^ {6}- /.test(stepStart)) {
+      index += 1;
+      continue;
+    }
+
+    let name = '';
+    let run = '';
+    const inlineName = stepStart.match(/^ {6}- name:\s*(.*)$/);
+    const inlineRun = stepStart.match(/^ {6}- run:\s*(.*)$/);
+    if (inlineName) name = inlineName[1].trim();
+    if (inlineRun) run = inlineRun[1].trim();
+
+    index += 1;
+    while (
+      index < jobLines.length &&
+      (jobLines[index].trim() === '' || indentation(jobLines[index]) > 6)
+    ) {
+      const line = jobLines[index];
+      if (/^\s*#/.test(line) && indentation(line) <= 8) {
+        index += 1;
+        continue;
+      }
+
+      const nameMatch = line.match(/^ {8}name:\s*(.*)$/);
+      if (nameMatch) name = nameMatch[1].trim().replace(/^['"]|['"]$/g, '');
+
+      const runMatch = line.match(/^ {8}run:\s*(.*)$/);
+      if (!runMatch) {
+        index += 1;
+        continue;
+      }
+
+      const scalar = runMatch[1].trim();
+      if (/^[>|][+-]?$/.test(scalar)) {
+        const blockLines: string[] = [];
+        index += 1;
+        while (index < jobLines.length) {
+          const blockLine = jobLines[index];
+          if (blockLine.trim() !== '' && indentation(blockLine) <= 8) break;
+          blockLines.push(blockLine.trim());
+          index += 1;
+        }
+        run = scalar.startsWith('>')
+          ? blockLines.join(' ')
+          : blockLines.join('\n');
+        break;
+      }
+
+      run = scalar.replace(/^(['"])(.*)\1$/, '$2');
+      index += 1;
+    }
+
+    steps.push({ name, run });
+  }
+  return steps;
+}
+
+function activeShellCommand(command: string): string {
+  let output = '';
+  let quote: "'" | '"' | null = null;
+  let escaped = false;
+
+  for (let index = 0; index < command.length; index += 1) {
+    const character = command[index];
+    if (escaped) {
+      output += character;
+      escaped = false;
+      continue;
+    }
+    if (character === '\\' && quote !== "'") {
+      output += character;
+      escaped = true;
+      continue;
+    }
+    if (quote) {
+      output += character;
+      if (character === quote) quote = null;
+      continue;
+    }
+    if (character === "'" || character === '"') {
+      quote = character;
+      output += character;
+      continue;
+    }
+    if (character === '#' && (index === 0 || /\s/.test(command[index - 1]))) {
+      while (index < command.length && command[index] !== '\n') index += 1;
+      output += '\n';
+      continue;
+    }
+    output += character;
+  }
+
+  return output.trim();
+}
+
+function shellCommands(command: string): string[][] {
+  const source = activeShellCommand(command);
+  const commands: string[][] = [];
+  let words: string[] = [];
+  let word = '';
+  let wordStarted = false;
+  let quote: "'" | '"' | null = null;
+  let escaped = false;
+
+  const pushWord = (): void => {
+    if (!wordStarted) return;
+    words.push(word);
+    word = '';
+    wordStarted = false;
+  };
+  const finishCommand = (): void => {
+    pushWord();
+    if (words.length > 0) commands.push(words);
+    words = [];
+  };
+
+  for (let index = 0; index < source.length; index += 1) {
+    const character = source[index];
+    if (escaped) {
+      if (character !== '\n') word += character;
+      escaped = false;
+      continue;
+    }
+    if (character === '\\' && quote !== "'") {
+      if (source[index + 1] === '\n') {
+        index += 1;
+      } else {
+        escaped = true;
+        wordStarted = true;
+      }
+      continue;
+    }
+    if (quote) {
+      if (character === quote) quote = null;
+      else word += character;
+      wordStarted = true;
+      continue;
+    }
+    if (character === "'" || character === '"') {
+      quote = character;
+      wordStarted = true;
+      continue;
+    }
+    if (/\s/.test(character)) {
+      pushWord();
+      if (character === '\n') finishCommand();
+      continue;
+    }
+    if (character === ';' || character === '|' || character === '&') {
+      finishCommand();
+      while (source[index + 1] === character) index += 1;
+      continue;
+    }
+    word += character;
+    wordStarted = true;
+  }
+
+  finishCommand();
+  return commands;
+}
+
+function hasShellInvocation(
+  command: string,
+  expectedArguments: readonly string[],
+): boolean {
+  const commands = shellCommands(command);
+  return (
+    commands.length === 1 &&
+    commands[0].length === expectedArguments.length &&
+    expectedArguments.every(
+      (argument, index) => commands[0][index] === argument,
+    )
+  );
+}
+
+function ciDatabaseIntegrationWiringErrors(workflow: string): string[] {
+  const job = workflowJobSource(workflow, 'validate');
+  const steps = workflowJobSteps(workflow, 'validate');
+  const commandFor = (name: string): string =>
+    steps.find((step) => step.name === name)?.run ?? '';
+  const createCommand = commandFor('Create isolated test database');
+  const verifyCommand = commandFor('Verify database integration CI wiring');
+  const migrateIndex = steps.findIndex((step) =>
+    hasShellInvocation(step.run, [
+      'pnpm',
+      '--filter',
+      '@emora/database',
+      'db:migrate:test',
+    ]),
+  );
+  const verifyIndex = steps.findIndex(
+    (step) => step.name === 'Verify database integration CI wiring',
+  );
+  const suiteIndex = steps.findIndex((step) =>
+    hasShellInvocation(step.run, [
+      'pnpm',
+      'exec',
+      'turbo',
+      'run',
+      'test',
+      '--',
+      '--reporter=verbose',
+    ]),
+  );
+  const createIndex = steps.findIndex(
+    (step) => step.name === 'Create isolated test database',
+  );
+
+  const errors: string[] = [];
+  if (!job.includes("EMORA_RUN_DB_INTEGRATION: '1'")) {
+    errors.push('validate job must explicitly opt in to database integration');
+  }
+  if (!/TEST_DATABASE_URL:[^\n]*localhost:5432\/emora_test/.test(job)) {
+    errors.push('validate job must target its local emora_test database');
+  }
+  if (!job.includes('POSTGRES_DB: postgres')) {
+    errors.push('validate PostgreSQL service must start outside emora_test');
+  }
+  if (
+    !hasShellInvocation(createCommand, [
+      'docker',
+      'exec',
+      '${{ job.services.postgres.id }}',
+      'psql',
+      '-v',
+      'ON_ERROR_STOP=1',
+      '-U',
+      'emora',
+      '-d',
+      'postgres',
+      '-c',
+      'CREATE DATABASE emora_test OWNER emora',
+    ])
+  ) {
+    errors.push('validate job must actively create emora_test');
+  }
+  if (createIndex < 0 || migrateIndex <= createIndex) {
+    errors.push('validate job must create emora_test before migrating it');
+  }
+  if (
+    !hasShellInvocation(verifyCommand, [
+      'pnpm',
+      '--filter',
+      '@emora/database',
+      'exec',
+      'vitest',
+      'run',
+      'src/integration-selectors.test.ts',
+      '--reporter=verbose',
+    ])
+  ) {
+    errors.push('validate job must actively run the database CI wiring guard');
+  }
+  if (verifyIndex < migrateIndex || verifyIndex < 0) {
+    errors.push('database CI wiring guard must run after test migrations');
+  }
+  if (suiteIndex <= verifyIndex || suiteIndex < 0) {
+    errors.push(
+      'validate job must run the full test suite after the wiring guard',
+    );
+  }
+  return errors;
+}
+
 describe('integration and E2E database selectors', () => {
   it('requires the safety setup in every Vitest package config', () => {
     const missingSetup = VITEST_CONFIGS.filter(({ path, setupFile }) => {
@@ -184,35 +488,101 @@ describe('integration and E2E database selectors', () => {
     expect(turbo.tasks.test.env).not.toContain('DATABASE_URL');
   });
 
-  it('CI validate job creates and migrates its local DB before verbose integration tests', () => {
+  it('CI validate job actively creates and migrates its local DB before integration tests', () => {
     const workflow = readFileSync(
       join(REPOSITORY_ROOT, '.github/workflows/ci.yml'),
       'utf8',
     );
-    const validateStart = workflow.indexOf('  validate:');
-    const nextJob = workflow.indexOf('\n  product-reality-e2e:', validateStart);
-    const validateJob = workflow.slice(validateStart, nextJob);
-    const createDatabase = validateJob.indexOf(
-      'CREATE DATABASE emora_test OWNER emora',
+    expect(ciDatabaseIntegrationWiringErrors(workflow)).toEqual([]);
+  });
+
+  it('detects commented-out database creation and full-suite invocations', () => {
+    const workflow = readFileSync(
+      join(REPOSITORY_ROOT, '.github/workflows/ci.yml'),
+      'utf8',
     );
-    const migrateDatabase = validateJob.indexOf(
-      'db:migrate:test',
-      createDatabase,
+    const testInvocation =
+      '        run: pnpm exec turbo run test -- --reporter=verbose';
+    const commentedTestInvocation = workflow.replace(
+      testInvocation,
+      `        #${testInvocation.trimStart()}`,
     );
-    const runTests = validateJob.indexOf(
-      'turbo run test -- --reporter=verbose',
-      migrateDatabase,
+    expect(commentedTestInvocation).not.toBe(workflow);
+    expect(
+      ciDatabaseIntegrationWiringErrors(commentedTestInvocation),
+    ).toContain(
+      'validate job must run the full test suite after the wiring guard',
     );
 
-    expect(validateStart).toBeGreaterThanOrEqual(0);
-    expect(nextJob).toBeGreaterThan(validateStart);
-    expect(validateJob).toContain("EMORA_RUN_DB_INTEGRATION: '1'");
-    expect(validateJob).toMatch(
-      /TEST_DATABASE_URL:[^\n]*localhost:5432\/emora_test/,
+    const createInvocation =
+      '          -c "CREATE DATABASE emora_test OWNER emora"';
+    const commentedCreateInvocation = workflow.replace(
+      createInvocation,
+      '          # -c "CREATE DATABASE emora_test OWNER emora"',
     );
-    expect(validateJob).toContain('POSTGRES_DB: postgres');
-    expect(createDatabase).toBeGreaterThanOrEqual(0);
-    expect(migrateDatabase).toBeGreaterThan(createDatabase);
-    expect(runTests).toBeGreaterThan(migrateDatabase);
+    expect(commentedCreateInvocation).not.toBe(workflow);
+    expect(
+      ciDatabaseIntegrationWiringErrors(commentedCreateInvocation),
+    ).toContain('validate job must actively create emora_test');
+  });
+
+  it('rejects echoed, wrapped, and shell-commented required commands', () => {
+    const workflow = readFileSync(
+      join(REPOSITORY_ROOT, '.github/workflows/ci.yml'),
+      'utf8',
+    );
+    const testInvocation =
+      '        run: pnpm exec turbo run test -- --reporter=verbose';
+    const mutations = [
+      '        run: echo "pnpm exec turbo run test -- --reporter=verbose"',
+      '        run: bash -c "pnpm exec turbo run test -- --reporter=verbose"',
+      '        run: echo ok # pnpm exec turbo run test -- --reporter=verbose',
+    ];
+    for (const replacement of mutations) {
+      const mutated = workflow.replace(testInvocation, replacement);
+      expect(mutated).not.toBe(workflow);
+      expect(ciDatabaseIntegrationWiringErrors(mutated)).toContain(
+        'validate job must run the full test suite after the wiring guard',
+      );
+    }
+  });
+
+  it('rejects logical-shell forms that can skip or mask the test command', () => {
+    const workflow = readFileSync(
+      join(REPOSITORY_ROOT, '.github/workflows/ci.yml'),
+      'utf8',
+    );
+    const testInvocation =
+      '        run: pnpm exec turbo run test -- --reporter=verbose';
+    const mutations = [
+      '        run: echo ok || pnpm exec turbo run test -- --reporter=verbose',
+      '        run: pnpm exec turbo run test -- --reporter=verbose || echo ok',
+    ];
+    for (const replacement of mutations) {
+      const mutated = workflow.replace(testInvocation, replacement);
+      expect(mutated).not.toBe(workflow);
+      expect(ciDatabaseIntegrationWiringErrors(mutated)).toContain(
+        'validate job must run the full test suite after the wiring guard',
+      );
+    }
+  });
+
+  it('rejects echo in place of the database-creation command', () => {
+    const workflow = readFileSync(
+      join(REPOSITORY_ROOT, '.github/workflows/ci.yml'),
+      'utf8',
+    );
+    const createCommand = `        run: >-
+          docker exec "\${{ job.services.postgres.id }}"
+          psql -v ON_ERROR_STOP=1 -U emora -d postgres
+          -c "CREATE DATABASE emora_test OWNER emora"`;
+    const mutated = workflow.replace(
+      createCommand,
+      '        run: echo "CREATE DATABASE emora_test OWNER emora"',
+    );
+    expect(mutated).not.toBe(workflow);
+    expect(ciDatabaseIntegrationWiringErrors(mutated)).toContain(
+      'validate job must actively create emora_test',
+    );
   });
 });

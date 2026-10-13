@@ -2,6 +2,10 @@ import { createHmac } from 'node:crypto';
 
 import { expect, test } from '@playwright/test';
 import type { BrowserContext, Page } from '@playwright/test';
+import {
+  currentTestDatabaseName,
+  TEST_DATABASE_NAME,
+} from '../../packages/database/src/database-identity.js';
 
 /**
  * Product Reality Validation Slice 1 — the real first-user browser journey.
@@ -88,6 +92,7 @@ let sharedContext: BrowserContext;
 let page: Page;
 
 test.beforeAll(async ({ browser }) => {
+  expect(await currentTestDatabaseName()).toBe(TEST_DATABASE_NAME);
   sharedContext = await browser.newContext();
   page = await sharedContext.newPage();
 });

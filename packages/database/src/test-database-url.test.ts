@@ -14,11 +14,9 @@ import {
 
 const LOCAL_TEST_URL =
   'postgresql://emora:emora_test_only@localhost:5433/emora_test';
-const CI_TEST_URL =
-  'postgresql://emora:emora_ci@127.0.0.1:5432/emora_test';
+const CI_TEST_URL = 'postgresql://emora:emora_ci@127.0.0.1:5432/emora_test';
 
-const PRODUCTION_URL =
-  `postgresql://postgres.${PRODUCTION_SUPABASE_PROJECT_REF}:redacted@aws-0-eu-west-1.pooler.supabase.com:6543/postgres`;
+const PRODUCTION_URL = `postgresql://postgres.${PRODUCTION_SUPABASE_PROJECT_REF}:redacted@aws-0-eu-west-1.pooler.supabase.com:6543/postgres`;
 
 describe('configureTestDatabaseEnvironment', () => {
   it('discards a production DATABASE_URL when integration is not requested', () => {
@@ -109,21 +107,27 @@ describe('integration-test database URL safety', () => {
       }),
     ).toThrow(UnsafeTestDatabaseUrlError);
 
-    expect(integrationTestDatabaseUrl(productionApplicationEnvironment)).toBeUndefined();
+    expect(
+      integrationTestDatabaseUrl(productionApplicationEnvironment),
+    ).toBeUndefined();
     expect(() =>
       integrationTestDatabaseUrl({
         ...productionApplicationEnvironment,
         EMORA_RUN_DB_INTEGRATION: '1',
       }),
     ).toThrow(UnsafeTestDatabaseUrlError);
-    expect(resolveTestDatabaseUrl({
-      testDatabaseUrl: undefined,
-      integrationRequested: false,
-    })).toContain('127.0.0.1:1');
+    expect(
+      resolveTestDatabaseUrl({
+        testDatabaseUrl: undefined,
+        integrationRequested: false,
+      }),
+    ).toContain('127.0.0.1:1');
   });
 
   it('rejects empty URLs and unsupported protocols', () => {
-    expect(() => validateTestDatabaseUrl('')).toThrow(UnsafeTestDatabaseUrlError);
+    expect(() => validateTestDatabaseUrl('')).toThrow(
+      UnsafeTestDatabaseUrlError,
+    );
     expect(() =>
       validateTestDatabaseUrl(
         'mysql://emora:emora_test_only@localhost:5433/emora_test',
@@ -132,8 +136,7 @@ describe('integration-test database URL safety', () => {
   });
 
   it('rejects the authoritative Production project in a Supavisor username', () => {
-    const productionUrl =
-      `postgresql://postgres.${PRODUCTION_SUPABASE_PROJECT_REF}:redacted@localhost:5432/emora_test`;
+    const productionUrl = `postgresql://postgres.${PRODUCTION_SUPABASE_PROJECT_REF}:redacted@localhost:5432/emora_test`;
     expect(() => validateTestDatabaseUrl(productionUrl)).toThrow(
       UnsafeTestDatabaseUrlError,
     );
@@ -168,9 +171,9 @@ describe('integration-test database URL safety', () => {
         'postgresql://emora:emora_test_only@localhost:5434/emora_test',
       ),
     ).toThrow(UnsafeTestDatabaseUrlError);
-    expect(() =>
-      validateTestDatabaseUrl(`${LOCAL_TEST_URL}#fragment`),
-    ).toThrow(UnsafeTestDatabaseUrlError);
+    expect(() => validateTestDatabaseUrl(`${LOCAL_TEST_URL}#fragment`)).toThrow(
+      UnsafeTestDatabaseUrlError,
+    );
     expect(() =>
       validateTestDatabaseUrl(`${LOCAL_TEST_URL}?sslmode=require`),
     ).toThrow(UnsafeTestDatabaseUrlError);
@@ -207,12 +210,24 @@ describe('integration-test database URL safety', () => {
   it('requires the explicit integration-run flag', () => {
     expect(databaseIntegrationRequested({})).toBe(false);
     expect(
-      databaseIntegrationRequested(
-        { EMORA_RUN_DB_INTEGRATION: '1' },
-      ),
+      databaseIntegrationRequested({ EMORA_RUN_DB_INTEGRATION: '1' }),
     ).toBe(true);
-    expect(
-      databaseIntegrationRequested({ CI: 'true' }),
-    ).toBe(false);
+    expect(databaseIntegrationRequested({ CI: 'true' })).toBe(false);
+  });
+
+  it('rejects malformed non-empty integration-run flags', () => {
+    for (const flag of ['true', '0', 'yes']) {
+      const environment = {
+        EMORA_RUN_DB_INTEGRATION: flag,
+        TEST_DATABASE_URL: LOCAL_TEST_URL,
+      };
+
+      expect(() => databaseIntegrationRequested(environment)).toThrow(
+        UnsafeTestDatabaseUrlError,
+      );
+      expect(() => integrationTestDatabaseUrl(environment)).toThrow(
+        UnsafeTestDatabaseUrlError,
+      );
+    }
   });
 });
