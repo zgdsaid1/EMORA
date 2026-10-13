@@ -4,6 +4,7 @@ import postgres from 'postgres';
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import * as schema from '@emora/database/schema';
+import { integrationTestDatabaseUrl } from '@emora/database/test-database-url';
 
 const mocks = vi.hoisted(() => ({ send: vi.fn() }));
 
@@ -16,13 +17,13 @@ vi.mock('resend', () => ({
 /**
  * Phase 3 integration coverage: registering must not grant a session, signing in
  * with an unverified credential must be refused, and the emailed link must flip
- * `emailVerified` so that sign-in then succeeds. Requires DATABASE_URL (the
- * workflow in CI, an explicit local override otherwise) — never run against the
- * hosted Supabase project.
+ * `emailVerified` so that sign-in then succeeds. Requires an explicit
+ * EMORA_RUN_DB_INTEGRATION=1 and a validated TEST_DATABASE_URL targeting
+ * emora_test — never run against the hosted Supabase project.
  */
 
-const databaseUrl = process.env.DATABASE_URL;
-const integration = process.env.CI ? describe : describe.skipIf(!databaseUrl);
+const databaseUrl = integrationTestDatabaseUrl(process.env);
+const integration = describe.skipIf(!databaseUrl);
 const client = databaseUrl ? postgres(databaseUrl, { max: 1 }) : null;
 const database = client ? drizzle(client, { schema }) : null;
 const createdEmails: string[] = [];

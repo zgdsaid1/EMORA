@@ -125,3 +125,18 @@ export function integrationTestDatabaseUrl(
   if (!databaseIntegrationRequested(environment)) return undefined;
   return validateTestDatabaseUrl(environment.TEST_DATABASE_URL);
 }
+
+/**
+ * Pin DATABASE_URL for a test process before the runtime client is imported.
+ * Explicit opt-in: DATABASE_URL becomes the validated TEST_DATABASE_URL, or the
+ * call throws without writing anything. No opt-in: DATABASE_URL becomes an
+ * unreachable loopback endpoint, so ambient or production values are discarded.
+ */
+export function configureTestDatabaseEnvironment(
+  environment: Record<string, string | undefined>,
+): void {
+  environment.DATABASE_URL = resolveTestDatabaseUrl({
+    testDatabaseUrl: environment.TEST_DATABASE_URL,
+    integrationRequested: databaseIntegrationRequested(environment),
+  });
+}

@@ -5,11 +5,13 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./schema": "./src/schema/index.ts"
+    "./schema": "./src/schema/index.ts",
+    "./test-database-url": "./src/test-database-url.ts",
+    "./test-setup": "./src/test-setup.ts"
   },
   "scripts": {
     "build": "tsc --noEmit",
-    "lint": "eslint src drizzle.config.ts",
+    "lint": "eslint src drizzle.config.ts drizzle.test.config.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "db:generate": "drizzle-kit generate",

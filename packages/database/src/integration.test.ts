@@ -5,14 +5,13 @@ import { afterAll, describe, expect, it } from 'vitest';
 import { drizzle } from 'drizzle-orm/postgres-js';
 
 import * as schema from './schema';
+import { integrationTestDatabaseUrl } from './test-database-url';
 
-const databaseUrl = process.env.DATABASE_URL;
+const databaseUrl = integrationTestDatabaseUrl(process.env);
 const client = databaseUrl ? postgres(databaseUrl, { max: 1 }) : null;
 const database = client ? drizzle(client, { schema }) : null;
 
-const databaseIntegration = process.env.CI
-  ? describe
-  : describe.skipIf(!database);
+const databaseIntegration = describe.skipIf(!database);
 
 databaseIntegration('PostgreSQL database foundation', () => {
   afterAll(async () => {

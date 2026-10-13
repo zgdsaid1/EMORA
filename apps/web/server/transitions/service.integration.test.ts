@@ -13,6 +13,7 @@ import {
   projects,
   users,
 } from '@emora/database';
+import { integrationTestDatabaseUrl } from '@emora/database/test-database-url';
 
 import {
   INITIALIZATION_MARKER,
@@ -30,8 +31,8 @@ import { runProjectScopedTransition } from './service';
  * test fixtures only — no production provisioning.
  */
 
-const databaseUrl = process.env.DATABASE_URL;
-const integration = process.env.CI ? describe : describe.skipIf(!databaseUrl);
+const databaseUrl = integrationTestDatabaseUrl(process.env);
+const integration = describe.skipIf(!databaseUrl);
 
 const STRONG_EVENT = {
   valence: 0.9,

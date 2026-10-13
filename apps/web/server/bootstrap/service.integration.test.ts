@@ -20,6 +20,7 @@ import {
   projects,
   users,
 } from '@emora/database';
+import { integrationTestDatabaseUrl } from '@emora/database/test-database-url';
 
 const authMocks = vi.hoisted(() => ({ requireAuth: vi.fn() }));
 
@@ -31,8 +32,8 @@ vi.mock('@emora/auth', async (importOriginal) => {
 process.env.AUTH_SECRET ??= 'integration-only-secret';
 process.env.BETTER_AUTH_URL ??= 'http://localhost:3000';
 
-const databaseUrl = process.env.DATABASE_URL;
-const integration = process.env.CI ? describe : describe.skipIf(!databaseUrl);
+const databaseUrl = integrationTestDatabaseUrl(process.env);
+const integration = describe.skipIf(!databaseUrl);
 const createdOrganizationIds: string[] = [];
 const createdUserIds: string[] = [];
 

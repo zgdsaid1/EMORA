@@ -32,11 +32,16 @@ endpoints, new database tables, and any product-code changes.
 ## Run
 
 ```
-DATABASE_URL=postgresql://emora:emora_dev_only@localhost:5432/emora \
+TEST_DATABASE_URL=<dedicated-local-test-url> \
+EMORA_RUN_DB_INTEGRATION=1 \
 AUTH_SECRET=emora-e2e-only-secret-not-for-production-32 \
 BETTER_AUTH_URL=http://localhost:3000 \
 pnpm exec playwright test
 ```
+
+`TEST_DATABASE_URL` must pass the strict local test-database policy (loopback
+host, port 5432 or 5433, database `emora_test`). Playwright never reads
+`DATABASE_URL`: the web server it launches receives only the validated test URL.
 
 ## Test isolation and known limitations
 

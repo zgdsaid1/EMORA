@@ -10,10 +10,12 @@ import { defineConfig, devices } from '@playwright/test';
  * a production build (`pnpm build`).
  */
 
+import { validateTestDatabaseUrl } from './packages/database/src/test-database-url';
+
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:3000';
-const databaseUrl =
-  process.env.DATABASE_URL ??
-  'postgresql://emora:emora_dev_only@localhost:5432/emora';
+// Fail closed: the E2E run requires an explicit, validated test database.
+// There is no fallback to DATABASE_URL, and the web server receives only this URL.
+const testDatabaseUrl = validateTestDatabaseUrl(process.env.TEST_DATABASE_URL);
 const authSecret =
   process.env.AUTH_SECRET ?? 'emora-e2e-only-secret-not-for-production-32';
 const betterAuthUrl = process.env.BETTER_AUTH_URL ?? 'http://localhost:3000';
@@ -37,10 +39,13 @@ export default defineConfig({
   webServer: {
     command: 'pnpm --filter @emora/web exec next start',
     url: baseURL,
-    reuseExistingServer: !process.env.CI,
+    // Never reuse a server whose database target cannot be verified.
+    reuseExistingServer: false,
     timeout: 180_000,
     env: {
-      DATABASE_URL: databaseUrl,
+      DATABASE_URL: testDatabaseUrl,
+      TEST_DATABASE_URL: testDatabaseUrl,
+      EMORA_RUN_DB_INTEGRATION: '1',
       AUTH_SECRET: authSecret,
       BETTER_AUTH_URL: betterAuthUrl,
     },

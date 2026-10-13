@@ -1,6 +1,9 @@
+import { execFileSync } from 'node:child_process';
+
 import { describe, expect, it } from 'vitest';
 
 import {
+  configureTestDatabaseEnvironment,
   databaseIntegrationRequested,
   PRODUCTION_SUPABASE_PROJECT_REF,
   integrationTestDatabaseUrl,
@@ -13,6 +16,85 @@ const LOCAL_TEST_URL =
   'postgresql://emora:emora_test_only@localhost:5433/emora_test';
 const CI_TEST_URL =
   'postgresql://emora:emora_ci@127.0.0.1:5432/emora_test';
+
+const PRODUCTION_URL =
+  `postgresql://postgres.${PRODUCTION_SUPABASE_PROJECT_REF}:redacted@aws-0-eu-west-1.pooler.supabase.com:6543/postgres`;
+
+describe('configureTestDatabaseEnvironment', () => {
+  it('discards a production DATABASE_URL when integration is not requested', () => {
+    const environment: Record<string, string | undefined> = {
+      DATABASE_URL: PRODUCTION_URL,
+      CI: 'true',
+    };
+
+    configureTestDatabaseEnvironment(environment);
+
+    expect(environment.DATABASE_URL).toContain('127.0.0.1:1');
+    expect(environment.DATABASE_URL).not.toContain(
+      PRODUCTION_SUPABASE_PROJECT_REF,
+    );
+  });
+
+  it('replaces DATABASE_URL with the validated test URL when integration is requested', () => {
+    const environment: Record<string, string | undefined> = {
+      DATABASE_URL: PRODUCTION_URL,
+      TEST_DATABASE_URL: LOCAL_TEST_URL,
+      EMORA_RUN_DB_INTEGRATION: '1',
+    };
+
+    configureTestDatabaseEnvironment(environment);
+
+    expect(environment.DATABASE_URL).toBe(LOCAL_TEST_URL);
+  });
+
+  it('fails closed without writing a fallback when TEST_DATABASE_URL is missing', () => {
+    const environment: Record<string, string | undefined> = {
+      DATABASE_URL: PRODUCTION_URL,
+      EMORA_RUN_DB_INTEGRATION: '1',
+    };
+    let error: unknown;
+
+    try {
+      configureTestDatabaseEnvironment(environment);
+    } catch (caught) {
+      error = caught;
+    }
+
+    expect(error).toBeInstanceOf(UnsafeTestDatabaseUrlError);
+    expect(String(error)).not.toContain(PRODUCTION_SUPABASE_PROJECT_REF);
+    expect(environment.DATABASE_URL).toBe(PRODUCTION_URL);
+  });
+
+  it('rejects a remote TEST_DATABASE_URL when integration is requested', () => {
+    const environment: Record<string, string | undefined> = {
+      TEST_DATABASE_URL:
+        'postgresql://emora:remote-only@db.example.test:5432/emora_test',
+      EMORA_RUN_DB_INTEGRATION: '1',
+    };
+
+    expect(() => configureTestDatabaseEnvironment(environment)).toThrow(
+      UnsafeTestDatabaseUrlError,
+    );
+  });
+
+  it('passes only the validated URL to child processes', () => {
+    const environment: Record<string, string | undefined> = {
+      ...process.env,
+      DATABASE_URL: PRODUCTION_URL,
+      TEST_DATABASE_URL: LOCAL_TEST_URL,
+      EMORA_RUN_DB_INTEGRATION: '1',
+    };
+
+    configureTestDatabaseEnvironment(environment);
+    const childValue = execFileSync(
+      process.execPath,
+      ['-e', "process.stdout.write(process.env['DATABASE_URL'] ?? '')"],
+      { env: environment, encoding: 'utf8' },
+    );
+
+    expect(childValue).toBe(LOCAL_TEST_URL);
+  });
+});
 
 describe('integration-test database URL safety', () => {
   it('does not fall back to DATABASE_URL when TEST_DATABASE_URL is missing', () => {
