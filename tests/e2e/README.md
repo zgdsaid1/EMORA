@@ -21,18 +21,25 @@ endpoints, new database tables, and any product-code changes.
 
 ## Prerequisites
 
-1. A migrated local PostgreSQL (repository-standard mechanism):
-   `docker compose up -d postgres` then
-   `DATABASE_URL=postgresql://emora:emora_dev_only@localhost:5432/emora pnpm --filter @emora/database db:migrate`
-2. A production build (the suite runs against `next start`, so the real
+1. Start the repository's local PostgreSQL service:
+   `docker compose up -d postgres`.
+2. If it does not already exist in this local Compose instance, create the
+   dedicated test database once:
+   `docker compose exec -T postgres psql -U emora -d postgres -v ON_ERROR_STOP=1 -c "CREATE DATABASE emora_test OWNER emora"`.
+3. Set the validated test URL and migrate only `emora_test`:
+   ```
+   export TEST_DATABASE_URL=postgresql://emora:emora_dev_only@127.0.0.1:5432/emora_test
+   export EMORA_RUN_DB_INTEGRATION=1
+   pnpm --filter @emora/database db:migrate:test
+   ```
+4. A production build (the suite runs against `next start`, so the real
    first-user bootstrap path is exercised without development fixtures):
-   `pnpm build`
-3. Playwright browsers: `pnpm exec playwright install chromium`
+   `DATABASE_URL="$TEST_DATABASE_URL" pnpm build`
+5. Playwright browsers: `pnpm exec playwright install chromium`
 
 ## Run
 
 ```
-TEST_DATABASE_URL=<dedicated-local-test-url> \
 EMORA_RUN_DB_INTEGRATION=1 \
 AUTH_SECRET=emora-e2e-only-secret-not-for-production-32 \
 BETTER_AUTH_URL=http://localhost:3000 \
@@ -47,7 +54,7 @@ host, port 5432 or 5433, database `emora_test`). Playwright never reads
 
 - Every run registers a fresh, unique test user through the real registration
   flow; no credentials are hard-coded and no production account is used. The
-  local development database accumulates test users across runs.
+  dedicated `emora_test` database accumulates test users across runs.
 - Idempotent duplicate submission cannot be exercised through the current UI
   (the UI always sends a fresh `Idempotency-Key`); it is covered by the
   backend route tests instead.
