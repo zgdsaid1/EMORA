@@ -441,7 +441,7 @@ export function ApplicationShell({ children }: { children: ReactNode }) {
             </button>
             <div className="header-location">
               <span className="header-kicker">{currentItem ? navigationLabel(locale, currentItem.key) : t('overview')}</span>
-              <span className="header-path">EMORA / {pathname === '/' ? 'OBSERVATORY' : pathname.slice(1).toUpperCase()}</span>
+              <span className="header-path">EMORA / {pathname === '/' ? navigationLabel(locale, 'observatory') : pathname.slice(1).toUpperCase()}</span>
             </div>
             <div className="shell-toolbar">
               <button className="command-trigger" onClick={() => setCommandOpen(true)} type="button">

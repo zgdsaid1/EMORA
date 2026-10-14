@@ -4,6 +4,7 @@ import { FormEvent, useState } from 'react';
 
 import { handleUnauthorizedResponse } from './session-recovery';
 import { usePreferences } from './shell/preferences';
+import type { MessageKey } from './shell/messages';
 
 import { SCIENTIFIC_DISCLOSURE_CODE } from '../server/transitions/disclosure';
 
@@ -38,6 +39,27 @@ interface ProfileCreateResponse {
   readonly profileId: string;
   readonly externalReference: string;
   readonly createdAt: string;
+}
+
+const PROFILE_CREATE_ERROR_KEYS = {
+  unauthenticated: 'wsProfileErrorUnauthenticated',
+  forbidden: 'wsProfileErrorForbidden',
+  invalid_input: 'wsProfileErrorInvalidInput',
+  invalid_content_type: 'wsProfileErrorInvalidContentType',
+  external_reference_conflict: 'wsProfileErrorExternalReferenceConflict',
+  internal_error: 'wsProfileCreateFailed',
+} as const satisfies Readonly<Record<string, MessageKey>>;
+
+export function profileCreateErrorTranslationKey(code: unknown): MessageKey {
+  if (
+    typeof code === 'string' &&
+    Object.prototype.hasOwnProperty.call(PROFILE_CREATE_ERROR_KEYS, code)
+  ) {
+    return PROFILE_CREATE_ERROR_KEYS[
+      code as keyof typeof PROFILE_CREATE_ERROR_KEYS
+    ];
+  }
+  return 'wsProfileCreateFailed';
 }
 
 export function ProfileOnboardingForm({ projectId }: { projectId: string }) {
@@ -113,13 +135,11 @@ export function ProfileOnboardingForm({ projectId }: { projectId: string }) {
         return;
       }
       const body = (await response.json()) as
-        ProfileCreateResponse | { error?: { message?: string } };
+        ProfileCreateResponse | { error?: { code?: unknown } };
 
       if (!response.ok) {
-        setError(
-          (body as { error?: { message?: string } }).error?.message ??
-            t('wsProfileCreateFailed'),
-        );
+        const code = (body as { error?: { code?: unknown } }).error?.code;
+        setError(t(profileCreateErrorTranslationKey(code)));
         return;
       }
       setResult(body as ProfileCreateResponse);

@@ -8,6 +8,7 @@ import {
   SCIENTIFIC_DISCLOSURE_TEXT,
 } from '../../server/transitions/disclosure';
 import { messages, type Locale } from './messages';
+import { navigationLabel } from './navigation-messages';
 
 /**
  * M0 multilingual presentation boundary regression suite.
@@ -359,6 +360,15 @@ describe('M0 multilingual presentation: /app string coverage (G)', () => {
     expect(workspace).toContain('candidate.profileId');
     expect(workspace).toContain("t('wsProjectLabel')");
     expect(workspace).toContain("t('wsProfileLabel')");
+  });
+
+  it('uses the existing localized Observatory navigation label in the header path', () => {
+    const shell = stripComments(readAppSource('shell/application-shell.tsx'));
+    expect(shell).toContain("navigationLabel(locale, 'observatory')");
+    expect(shell).not.toContain("'OBSERVATORY'");
+    expect(navigationLabel('en', 'observatory')).toBe('Observatory');
+    expect(navigationLabel('fr', 'observatory')).toBe('Observatoire');
+    expect(navigationLabel('ar', 'observatory')).toBe('المرصد');
   });
 });
 

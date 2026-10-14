@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 import { messages } from './shell/messages';
+import { profileCreateErrorTranslationKey } from './profile-onboarding-form';
 
 /**
  * A2 profile onboarding UI verification (source-scan convention, matching the
@@ -115,20 +116,21 @@ describe('A2 submission behavior', () => {
 
 
 describe('A2 error safety', () => {
-  it('renders only the server envelope message and a safe fallback', () => {
+  it('renders a translated message selected from the server error code', () => {
     expect(formSource).toContain('role="alert"');
-    expect(formSource).toContain('error?.message');
-    expect(formSource).toContain("t('wsProfileCreateFailed')");
+    expect(formSource).toContain('error?.code');
+    expect(formSource).toContain('t(profileCreateErrorTranslationKey(code))');
     expect(messages.en.wsProfileCreateFailed).toBe(
       'The profile could not be created.',
     );
+    expect(formSource).not.toContain('error?.message');
   });
 
   it('never surfaces internal error details', () => {
     for (const forbidden of [
       'error.stack',
       'error.name',
-      'error.code',
+      'error.errorCategory',
       'console.error',
       'duplicate key',
       'SQLSTATE',
@@ -139,14 +141,28 @@ describe('A2 error safety', () => {
     }
   });
 
-  it('does not duplicate the server error taxonomy client-side', () => {
-    // Frozen server-side messages stay server-side; the client renders the
-    // envelope message as-is rather than re-implementing the taxonomy.
-    expect(formSource).not.toContain('already exists in this project');
-    expect(formSource).not.toContain('unauthenticated');
-    expect(formSource).not.toContain('forbidden');
-    expect(formSource).not.toContain('invalid_content_type');
-    expect(formSource).not.toContain('internal_error');
+  it('maps every existing server code to localized text with a safe unknown fallback', () => {
+    const cases = [
+      ['unauthenticated', 'wsProfileErrorUnauthenticated'],
+      ['forbidden', 'wsProfileErrorForbidden'],
+      ['invalid_input', 'wsProfileErrorInvalidInput'],
+      ['invalid_content_type', 'wsProfileErrorInvalidContentType'],
+      ['external_reference_conflict', 'wsProfileErrorExternalReferenceConflict'],
+      ['internal_error', 'wsProfileCreateFailed'],
+    ] as const;
+
+    for (const [code, key] of cases) {
+      expect(profileCreateErrorTranslationKey(code)).toBe(key);
+      for (const locale of ['en', 'fr', 'ar'] as const) {
+        expect(messages[locale][key].length).toBeGreaterThan(0);
+      }
+    }
+    expect(profileCreateErrorTranslationKey('future_server_code')).toBe(
+      'wsProfileCreateFailed',
+    );
+    expect(profileCreateErrorTranslationKey(undefined)).toBe(
+      'wsProfileCreateFailed',
+    );
   });
 });
 
