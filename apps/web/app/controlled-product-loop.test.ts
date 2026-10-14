@@ -43,6 +43,11 @@ describe('Slice 4A controlled product loop', () => {
     // The panel re-runs its read when the refresh key changes.
     expect(panelSource).toContain('refreshKey?: number;');
     expect(panelSource).toContain('}, [load, refreshKey]);');
+    expect(panelSource).toContain('void load();');
+    expect(panelSource).toContain('onClick={() => void load()}');
+    expect(panelSource).toContain(
+      'return () => invalidateRequestSequence(requestSequence);',
+    );
   });
 
   it('signals success only after a confirmed 2xx response', () => {

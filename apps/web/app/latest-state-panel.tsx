@@ -1,7 +1,11 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
+import {
+  invalidateRequestSequence,
+  runLatestRequest,
+} from './latest-state-request';
 import { handleUnauthorizedResponse } from './session-recovery';
 import { usePreferences } from './shell/preferences';
 
@@ -68,6 +72,10 @@ type PanelState =
   | { readonly kind: 'error' }
   | { readonly kind: 'ready'; readonly data: LatestStateResponse };
 
+type LatestStateReadResult =
+  | { readonly kind: 'response-error'; readonly status: number }
+  | { readonly kind: 'ready'; readonly data: LatestStateResponse };
+
 export function LatestStatePanel({
   projectId,
   profileId,
@@ -79,39 +87,47 @@ export function LatestStatePanel({
 }) {
   const { t } = usePreferences();
   const [state, setState] = useState<PanelState>({ kind: 'loading' });
+  const requestSequence = useRef(0);
 
-  const load = useCallback(async () => {
+  const load = useCallback(() => {
     setState({ kind: 'loading' });
-    try {
-      const response = await fetch(
-        `/api/v1/projects/${projectId}/profiles/${profileId}/states/latest`,
-      );
-      if (
-        handleUnauthorizedResponse(
-          response.status,
-          `${window.location.pathname}${window.location.search}`,
-          (url) => window.location.assign(url),
-        )
-      ) {
-        return;
-      }
-      if (response.status === 404) {
-        setState({ kind: 'empty' });
-        return;
-      }
-      if (!response.ok) {
-        setState({ kind: 'error' });
-        return;
-      }
-      const body = (await response.json()) as LatestStateResponse;
-      setState({ kind: 'ready', data: body });
-    } catch {
-      setState({ kind: 'error' });
-    }
+    void runLatestRequest<LatestStateReadResult>(
+      requestSequence,
+      async () => {
+        const response = await fetch(
+          `/api/v1/projects/${projectId}/profiles/${profileId}/states/latest`,
+        );
+        if (!response.ok) {
+          return { kind: 'response-error', status: response.status };
+        }
+        const body = (await response.json()) as LatestStateResponse;
+        return { kind: 'ready', data: body };
+      },
+      (result) => {
+        if (result.kind === 'response-error') {
+          if (
+            handleUnauthorizedResponse(
+              result.status,
+              `${window.location.pathname}${window.location.search}`,
+              (url) => window.location.assign(url),
+            )
+          ) {
+            return;
+          }
+          setState(
+            result.status === 404 ? { kind: 'empty' } : { kind: 'error' },
+          );
+          return;
+        }
+        setState({ kind: 'ready', data: result.data });
+      },
+      () => setState({ kind: 'error' }),
+    );
   }, [projectId, profileId]);
 
   useEffect(() => {
     void load();
+    return () => invalidateRequestSequence(requestSequence);
   }, [load, refreshKey]);
 
   return (
