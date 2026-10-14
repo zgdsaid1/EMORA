@@ -4,6 +4,7 @@ import { afterAll, describe, expect, it, vi } from 'vitest';
 import { drizzle } from 'drizzle-orm/postgres-js';
 
 import * as schema from '@emora/database/schema';
+import { integrationTestDatabaseUrl } from '@emora/database/test-database-url';
 
 const mocks = vi.hoisted(() => ({ send: vi.fn() }));
 
@@ -15,8 +16,8 @@ vi.mock('resend', () => ({
   },
 }));
 
-const databaseUrl = process.env.DATABASE_URL;
-const integration = process.env.CI ? describe : describe.skipIf(!databaseUrl);
+const databaseUrl = integrationTestDatabaseUrl(process.env);
+const integration = describe.skipIf(!databaseUrl);
 const client = databaseUrl ? postgres(databaseUrl, { max: 1 }) : null;
 const database = client ? drizzle(client, { schema }) : null;
 const createdEmails: string[] = [];

@@ -5,18 +5,31 @@ import { afterAll, describe, expect, it } from 'vitest';
 import { drizzle } from 'drizzle-orm/postgres-js';
 
 import * as schema from './schema';
+import {
+  integrationTestDatabaseUrl,
+  TEST_DATABASE_NAME,
+} from './test-database-url';
 
-const databaseUrl = process.env.DATABASE_URL;
+const databaseUrl = integrationTestDatabaseUrl(process.env);
 const client = databaseUrl ? postgres(databaseUrl, { max: 1 }) : null;
 const database = client ? drizzle(client, { schema }) : null;
 
-const databaseIntegration = process.env.CI
-  ? describe
-  : describe.skipIf(!database);
+const databaseIntegration = describe.skipIf(!database);
 
 databaseIntegration('PostgreSQL database foundation', () => {
   afterAll(async () => {
     await client?.end({ timeout: 5 });
+  });
+
+  it('connects to the dedicated test database', async () => {
+    if (!client) {
+      throw new Error('The integration database is not configured.');
+    }
+
+    const rows = await client.unsafe(
+      'select current_database() as database_name',
+    );
+    expect(rows[0]?.database_name).toBe(TEST_DATABASE_NAME);
   });
 
   it('connects, inserts related records, and queries the relation', async () => {

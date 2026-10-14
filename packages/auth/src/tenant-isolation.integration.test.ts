@@ -4,11 +4,12 @@ import { afterAll, describe, expect, it } from 'vitest';
 import { drizzle } from 'drizzle-orm/postgres-js';
 
 import * as schema from '@emora/database/schema';
+import { integrationTestDatabaseUrl } from '@emora/database/test-database-url';
 
-const databaseUrl = process.env.DATABASE_URL;
+const databaseUrl = integrationTestDatabaseUrl(process.env);
 const client = databaseUrl ? postgres(databaseUrl, { max: 1 }) : null;
 const database = client ? drizzle(client, { schema }) : null;
-const integration = process.env.CI ? describe : describe.skipIf(!database);
+const integration = describe.skipIf(!database);
 
 integration('server-side tenant isolation', () => {
   afterAll(async () => {

@@ -9,20 +9,22 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     env:
-      DATABASE_URL: postgresql://emora:emora_ci@localhost:5432/emora
+      DATABASE_URL: postgresql://emora:emora_ci@localhost:5432/emora_test
+      TEST_DATABASE_URL: postgresql://emora:emora_ci@localhost:5432/emora_test
+      EMORA_RUN_DB_INTEGRATION: '1'
       AUTH_SECRET: emora-ci-only-secret-not-for-production-32
       BETTER_AUTH_URL: http://localhost:3000
     services:
       postgres:
         image: pgvector/pgvector:pg16
         env:
-          POSTGRES_DB: emora
+          POSTGRES_DB: postgres
           POSTGRES_USER: emora
           POSTGRES_PASSWORD: emora_ci
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U emora -d emora"
+          --health-cmd "pg_isready -U emora -d postgres"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
@@ -36,17 +38,27 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter @emora/database db:migrate
+      - name: Create isolated test database
+        run: >-
+          docker exec "${{ job.services.postgres.id }}"
+          psql -v ON_ERROR_STOP=1 -U emora -d postgres
+          -c "CREATE DATABASE emora_test OWNER emora"
+      - run: pnpm --filter @emora/database db:migrate:test
+      - name: Verify database integration CI wiring
+        run: pnpm --filter @emora/database exec vitest run src/integration-selectors.test.ts --reporter=verbose
       - run: pnpm lint
       - run: pnpm typecheck
-      - run: pnpm test
+      - name: Run unit and database integration suites
+        run: pnpm exec turbo run test -- --reporter=verbose
       - run: pnpm build
 
   product-reality-e2e:
     needs: validate
     runs-on: ubuntu-latest
     env:
-      DATABASE_URL: postgresql://emora:emora_ci@localhost:5432/emora
+      DATABASE_URL: postgresql://emora:emora_ci@localhost:5432/emora_test
+      TEST_DATABASE_URL: postgresql://emora:emora_ci@localhost:5432/emora_test
+      EMORA_RUN_DB_INTEGRATION: '1'
       AUTH_SECRET: emora-ci-only-secret-not-for-production-32
       BETTER_AUTH_URL: http://localhost:3000
       CI: 'true'
@@ -54,13 +66,13 @@ jobs:
       postgres:
         image: pgvector/pgvector:pg16
         env:
-          POSTGRES_DB: emora
+          POSTGRES_DB: emora_test
           POSTGRES_USER: emora
           POSTGRES_PASSWORD: emora_ci
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U emora -d emora"
+          --health-cmd "pg_isready -U emora -d emora_test"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
@@ -74,7 +86,7 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter @emora/database db:migrate
+      - run: pnpm --filter @emora/database db:migrate:test
       - run: pnpm build
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm exec playwright test --add-reporter html --trace retain-on-failure

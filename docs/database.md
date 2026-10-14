@@ -11,7 +11,27 @@ docker compose up -d postgres
 DATABASE_URL=postgresql://emora:emora_dev_only@localhost:5432/emora pnpm --filter @emora/database db:migrate
 ```
 
+For integration tests, use a separate database named `emora_test`. The Compose
+`postgres` service in this repository creates only the `emora` database, and no
+service here creates `emora_test` automatically, so create it explicitly in a
+local PostgreSQL instance before migrating. `db:migrate:test` reads
+`TEST_DATABASE_URL` and never falls back to `DATABASE_URL`:
+
+```bash
+TEST_DATABASE_URL=postgresql://<test-user>:<test-password>@localhost:5432/emora_test \
+  pnpm --filter @emora/database db:migrate:test
+```
+
+Replace the placeholders with credentials for a local test role. The URL must
+use a loopback host (`localhost`, `127.0.0.1`, or `::1`), port `5432` or `5433`,
+database `emora_test`, and no query or fragment parameters. Any other value is
+rejected before migration runs.
+
 `DATABASE_URL` is required by both the runtime client and Drizzle Kit. Credentials are placeholders only and must not be reused outside local development.
+
+URL validation is a defense-in-depth check of the configured test target. It does
+not prove that the resolved PostgreSQL instance is disposable or isolated from
+other local processes.
 
 ## Tables
 
