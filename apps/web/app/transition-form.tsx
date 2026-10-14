@@ -72,9 +72,11 @@ const EVENT_FIELDS = [
 export function TransitionForm({
   projectId,
   profileId,
+  onTransitionSucceeded,
 }: {
   projectId: string;
   profileId: string;
+  onTransitionSucceeded?: () => void;
 }) {
   const { t } = usePreferences();
   const [result, setResult] = useState<TransitionResponse | null>(null);
@@ -134,6 +136,10 @@ export function TransitionForm({
         return;
       }
       setResult(body as TransitionResponse);
+      // Slice 4A: only a confirmed 2xx response signals the latest-state panel
+      // to refresh. The !response.ok and unauthorized branches return earlier
+      // and never reach this call.
+      onTransitionSucceeded?.();
     } catch {
       setError(t('wsTransitionFailed'));
     } finally {

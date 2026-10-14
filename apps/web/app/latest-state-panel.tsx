@@ -71,9 +71,11 @@ type PanelState =
 export function LatestStatePanel({
   projectId,
   profileId,
+  refreshKey = 0,
 }: {
   projectId: string;
   profileId: string;
+  refreshKey?: number;
 }) {
   const { t } = usePreferences();
   const [state, setState] = useState<PanelState>({ kind: 'loading' });
@@ -110,7 +112,7 @@ export function LatestStatePanel({
 
   useEffect(() => {
     void load();
-  }, [load]);
+  }, [load, refreshKey]);
 
   return (
     <section className="workspace-section">
