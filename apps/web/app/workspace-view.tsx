@@ -9,6 +9,8 @@
  * dictionary — locale never enters requests, computation, or persistence.
  */
 
+import { useState } from 'react';
+
 import { BootstrapForm } from './bootstrap-form';
 import { LatestStatePanel } from './latest-state-panel';
 import { LogoutButton } from './logout-button';
@@ -40,6 +42,11 @@ export function WorkspaceView({
   profile?: WorkspaceProfileSummary;
 }) {
   const { t } = usePreferences();
+  // Slice 4A: after a confirmed successful transition, the latest-state panel
+  // re-reads the same authorized project/profile. The counter only advances on
+  // success; validation errors, failed requests, and unauthorized responses
+  // never trigger a refresh.
+  const [latestStateRefreshKey, setLatestStateRefreshKey] = useState(0);
 
   return (
     <main className="workspace-view">
@@ -141,10 +148,14 @@ export function WorkspaceView({
               <LatestStatePanel
                 projectId={project.projectId}
                 profileId={profile.profileId}
+                refreshKey={latestStateRefreshKey}
               />
               <TransitionForm
                 projectId={project.projectId}
                 profileId={profile.profileId}
+                onTransitionSucceeded={() =>
+                  setLatestStateRefreshKey((key) => key + 1)
+                }
               />
             </>
           ) : (

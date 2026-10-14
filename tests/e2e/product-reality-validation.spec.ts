@@ -206,12 +206,17 @@ test.describe.serial('Product Reality Validation Slice 1', () => {
         name: 'Computational model-estimated state',
       }),
     ).toBeVisible();
-    await expect(page.getByText('Model identity')).toBeVisible();
+    const latestStatePanel = page
+      .getByRole('heading', { name: 'Most recent computational state' })
+      .locator('xpath=../..');
     await expect(
-      page.getByText('deterministic-emotional-dynamics').first(),
+      latestStatePanel.getByRole('heading', { name: 'Model identity' }),
     ).toBeVisible();
     await expect(
-      page.getByText('DEFAULT_DETERMINISTIC_MODEL_PARAMETERS'),
+      latestStatePanel.getByText('deterministic-emotional-dynamics'),
+    ).toBeVisible();
+    await expect(
+      latestStatePanel.getByText('DEFAULT_DETERMINISTIC_MODEL_PARAMETERS'),
     ).toBeVisible();
   });
 
