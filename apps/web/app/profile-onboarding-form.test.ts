@@ -69,9 +69,9 @@ describe('A2 profile onboarding surface', () => {
 
   it('provides client-side UX validation within the contract bounds', () => {
     expect(formSource).toContain('maxLength={128}');
-    expect(formSource).toContain("t('wsExtRefLength')");
-    expect(formSource).toContain("t('wsExtRefPrintable')");
-    expect(formSource).toContain("t('wsTraitsObject')");
+    expect(formSource).toContain("setError('wsExtRefLength')");
+    expect(formSource).toContain("setError('wsExtRefPrintable')");
+    expect(formSource).toContain("setError('wsTraitsObject')");
     expect(messages.en.wsExtRefLength).toBe(
       'External reference must be 1 to 128 characters.',
     );
@@ -119,7 +119,7 @@ describe('A2 error safety', () => {
   it('renders a translated message selected from the server error code', () => {
     expect(formSource).toContain('role="alert"');
     expect(formSource).toContain('error?.code');
-    expect(formSource).toContain('t(profileCreateErrorTranslationKey(code))');
+    expect(formSource).toContain('setError(profileCreateErrorTranslationKey(code))');
     expect(messages.en.wsProfileCreateFailed).toBe(
       'The profile could not be created.',
     );
@@ -163,6 +163,47 @@ describe('A2 error safety', () => {
     expect(profileCreateErrorTranslationKey(undefined)).toBe(
       'wsProfileCreateFailed',
     );
+  });
+});
+
+describe('A2 locale-switch error regression', () => {
+  it('stores a typed translation key, not translated text, in profile error state', () => {
+    expect(formSource).toContain('useState<MessageKey | null>(null)');
+    expect(formSource).not.toMatch(/setError\(t\(/);
+  });
+
+  it('translates the stored key at render time so a locale change updates the alert', () => {
+    expect(formSource).toContain('{t(error)}');
+    // The same stored key resolves to distinct text in each locale, so
+    // switching locale re-renders an already-visible alert in the new language.
+    const key = 'wsProfileCreateFailed';
+    const variants = ['en', 'fr', 'ar'].map(
+      (locale) => messages[locale as 'en' | 'fr' | 'ar'][key],
+    );
+    expect(new Set(variants).size).toBe(3);
+    for (const text of variants) {
+      expect(text.length).toBeGreaterThan(0);
+    }
+  });
+
+  it('stores request failures as keys so a pending locale change cannot freeze a stale locale', () => {
+    expect(formSource).toContain(
+      'setError(profileCreateErrorTranslationKey(code))',
+    );
+    expect(formSource).toContain("setError('wsProfileCreateFailed')");
+    expect(formSource).toContain('{t(error)}');
+    expect(formSource).not.toMatch(/setError\(t\(/);
+  });
+
+  it('keeps unknown and internal_error codes on the localized generic fallback', () => {
+    const generic = 'wsProfileCreateFailed';
+    expect(profileCreateErrorTranslationKey('internal_error')).toBe(generic);
+    expect(profileCreateErrorTranslationKey('future_server_code')).toBe(generic);
+    expect(profileCreateErrorTranslationKey(undefined)).toBe(generic);
+    const variants = ['en', 'fr', 'ar'].map(
+      (locale) => messages[locale as 'en' | 'fr' | 'ar'][generic],
+    );
+    expect(new Set(variants).size).toBe(3);
   });
 });
 

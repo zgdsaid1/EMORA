@@ -65,7 +65,7 @@ export function profileCreateErrorTranslationKey(code: unknown): MessageKey {
 export function ProfileOnboardingForm({ projectId }: { projectId: string }) {
   const { t } = usePreferences();
   const [result, setResult] = useState<ProfileCreateResponse | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<MessageKey | null>(null);
   const [pending, setPending] = useState(false);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -79,11 +79,11 @@ export function ProfileOnboardingForm({ projectId }: { projectId: string }) {
 
     const externalReference = String(formData.get('externalReference') ?? '');
     if (externalReference.length < 1 || externalReference.length > 128) {
-      setError(t('wsExtRefLength'));
+      setError('wsExtRefLength');
       return;
     }
     if (!EXTERNAL_REFERENCE_PATTERN.test(externalReference)) {
-      setError(t('wsExtRefPrintable'));
+      setError('wsExtRefPrintable');
       return;
     }
 
@@ -102,12 +102,12 @@ export function ProfileOnboardingForm({ projectId }: { projectId: string }) {
           parsed === null ||
           Array.isArray(parsed)
         ) {
-          setError(t('wsTraitsObject'));
+          setError('wsTraitsObject');
           return;
         }
         additionalTraits = parsed as Record<string, number>;
       } catch {
-        setError(t('wsTraitsObject'));
+        setError('wsTraitsObject');
         return;
       }
     }
@@ -139,12 +139,12 @@ export function ProfileOnboardingForm({ projectId }: { projectId: string }) {
 
       if (!response.ok) {
         const code = (body as { error?: { code?: unknown } }).error?.code;
-        setError(t(profileCreateErrorTranslationKey(code)));
+        setError(profileCreateErrorTranslationKey(code));
         return;
       }
       setResult(body as ProfileCreateResponse);
     } catch {
-      setError(t('wsProfileCreateFailed'));
+      setError('wsProfileCreateFailed');
     } finally {
       setPending(false);
     }
@@ -204,7 +204,7 @@ export function ProfileOnboardingForm({ projectId }: { projectId: string }) {
         </div>
       </form>
 
-      {error && <p role="alert" className="workspace-error">{error}</p>}
+      {error && <p role="alert" className="workspace-error">{t(error)}</p>}
 
       {result && (
         <div role="status" className="workspace-readout">
