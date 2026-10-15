@@ -4,6 +4,7 @@ import {
   createContext,
   useContext,
   useEffect,
+  useLayoutEffect,
   useState,
   type ReactNode,
 } from 'react';
@@ -34,6 +35,21 @@ function isLocale(value: string | null): value is Locale {
   return value === 'en' || value === 'fr' || value === 'ar';
 }
 
+export function resolveStoredLocale(value: string | null): Locale {
+  return isLocale(value) ? value : 'en';
+}
+
+export function syncDocumentLocale(
+  locale: Locale,
+  documentElement: Pick<HTMLElement, 'lang' | 'dir'>,
+): void {
+  documentElement.lang = locale;
+  documentElement.dir = locale === 'ar' ? 'rtl' : 'ltr';
+}
+
+const useHydrationLayoutEffect =
+  typeof window === 'undefined' ? useEffect : useLayoutEffect;
+
 function isAppearance(value: string | null): value is AppearanceMode {
   return value === 'light' || value === 'dark' || value === 'system';
 }
@@ -44,18 +60,21 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
   const [sidebarCollapsed, setSidebarCollapsedState] = useState(false);
   const [hydrated, setHydrated] = useState(false);
 
-  useEffect(() => {
+  useHydrationLayoutEffect(() => {
     const storedAppearance = localStorage.getItem(STORAGE_KEYS.appearance);
-    const storedLocale = localStorage.getItem(STORAGE_KEYS.locale);
+    const storedLocale = resolveStoredLocale(
+      localStorage.getItem(STORAGE_KEYS.locale),
+    );
     setAppearanceState(isAppearance(storedAppearance) ? storedAppearance : 'system');
-    setLocaleState(isLocale(storedLocale) ? storedLocale : 'en');
+    setLocaleState(storedLocale);
+    syncDocumentLocale(storedLocale, document.documentElement);
     setSidebarCollapsedState(
       localStorage.getItem(STORAGE_KEYS.sidebar) === 'true',
     );
     setHydrated(true);
   }, []);
 
-  useEffect(() => {
+  useHydrationLayoutEffect(() => {
     if (!hydrated) return;
 
     const media = window.matchMedia('(prefers-color-scheme: dark)');
@@ -68,8 +87,7 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
           : appearance;
       document.documentElement.dataset.theme = resolved;
       document.documentElement.dataset.appearance = appearance;
-      document.documentElement.lang = locale;
-      document.documentElement.dir = locale === 'ar' ? 'rtl' : 'ltr';
+      syncDocumentLocale(locale, document.documentElement);
       localStorage.setItem(STORAGE_KEYS.appearance, appearance);
       localStorage.setItem(STORAGE_KEYS.locale, locale);
       localStorage.setItem(STORAGE_KEYS.sidebar, String(sidebarCollapsed));

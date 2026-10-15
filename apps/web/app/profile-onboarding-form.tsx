@@ -4,6 +4,7 @@ import { FormEvent, useState } from 'react';
 
 import { handleUnauthorizedResponse } from './session-recovery';
 import { usePreferences } from './shell/preferences';
+import type { MessageKey } from './shell/messages';
 
 import { SCIENTIFIC_DISCLOSURE_CODE } from '../server/transitions/disclosure';
 
@@ -40,10 +41,31 @@ interface ProfileCreateResponse {
   readonly createdAt: string;
 }
 
+const PROFILE_CREATE_ERROR_KEYS = {
+  unauthenticated: 'wsProfileErrorUnauthenticated',
+  forbidden: 'wsProfileErrorForbidden',
+  invalid_input: 'wsProfileErrorInvalidInput',
+  invalid_content_type: 'wsProfileErrorInvalidContentType',
+  external_reference_conflict: 'wsProfileErrorExternalReferenceConflict',
+  internal_error: 'wsProfileCreateFailed',
+} as const satisfies Readonly<Record<string, MessageKey>>;
+
+export function profileCreateErrorTranslationKey(code: unknown): MessageKey {
+  if (
+    typeof code === 'string' &&
+    Object.prototype.hasOwnProperty.call(PROFILE_CREATE_ERROR_KEYS, code)
+  ) {
+    return PROFILE_CREATE_ERROR_KEYS[
+      code as keyof typeof PROFILE_CREATE_ERROR_KEYS
+    ];
+  }
+  return 'wsProfileCreateFailed';
+}
+
 export function ProfileOnboardingForm({ projectId }: { projectId: string }) {
   const { t } = usePreferences();
   const [result, setResult] = useState<ProfileCreateResponse | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<MessageKey | null>(null);
   const [pending, setPending] = useState(false);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -57,11 +79,11 @@ export function ProfileOnboardingForm({ projectId }: { projectId: string }) {
 
     const externalReference = String(formData.get('externalReference') ?? '');
     if (externalReference.length < 1 || externalReference.length > 128) {
-      setError(t('wsExtRefLength'));
+      setError('wsExtRefLength');
       return;
     }
     if (!EXTERNAL_REFERENCE_PATTERN.test(externalReference)) {
-      setError(t('wsExtRefPrintable'));
+      setError('wsExtRefPrintable');
       return;
     }
 
@@ -80,12 +102,12 @@ export function ProfileOnboardingForm({ projectId }: { projectId: string }) {
           parsed === null ||
           Array.isArray(parsed)
         ) {
-          setError(t('wsTraitsObject'));
+          setError('wsTraitsObject');
           return;
         }
         additionalTraits = parsed as Record<string, number>;
       } catch {
-        setError(t('wsTraitsObject'));
+        setError('wsTraitsObject');
         return;
       }
     }
@@ -113,18 +135,16 @@ export function ProfileOnboardingForm({ projectId }: { projectId: string }) {
         return;
       }
       const body = (await response.json()) as
-        ProfileCreateResponse | { error?: { message?: string } };
+        ProfileCreateResponse | { error?: { code?: unknown } };
 
       if (!response.ok) {
-        setError(
-          (body as { error?: { message?: string } }).error?.message ??
-            t('wsProfileCreateFailed'),
-        );
+        const code = (body as { error?: { code?: unknown } }).error?.code;
+        setError(profileCreateErrorTranslationKey(code));
         return;
       }
       setResult(body as ProfileCreateResponse);
     } catch {
-      setError(t('wsProfileCreateFailed'));
+      setError('wsProfileCreateFailed');
     } finally {
       setPending(false);
     }
@@ -184,7 +204,7 @@ export function ProfileOnboardingForm({ projectId }: { projectId: string }) {
         </div>
       </form>
 
-      {error && <p role="alert" className="workspace-error">{error}</p>}
+      {error && <p role="alert" className="workspace-error">{t(error)}</p>}
 
       {result && (
         <div role="status" className="workspace-readout">
