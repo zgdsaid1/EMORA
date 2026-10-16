@@ -8,8 +8,14 @@ import {
   useState,
   type ReactNode,
 } from 'react';
+import * as React from 'react';
 
 import { translate, type Locale, type MessageKey } from './messages';
+import {
+  LOCALE_STORAGE_KEY,
+  persistLocalePreference,
+  resolveHydratedLocale,
+} from './locale-preference';
 
 export type AppearanceMode = 'light' | 'dark' | 'system';
 
@@ -27,17 +33,8 @@ const PreferencesContext = createContext<Preferences | null>(null);
 
 const STORAGE_KEYS = {
   appearance: 'emora.appearance',
-  locale: 'emora.locale',
   sidebar: 'emora.sidebar-collapsed',
 } as const;
-
-function isLocale(value: string | null): value is Locale {
-  return value === 'en' || value === 'fr' || value === 'ar';
-}
-
-export function resolveStoredLocale(value: string | null): Locale {
-  return isLocale(value) ? value : 'en';
-}
 
 export function syncDocumentLocale(
   locale: Locale,
@@ -54,25 +51,62 @@ function isAppearance(value: string | null): value is AppearanceMode {
   return value === 'light' || value === 'dark' || value === 'system';
 }
 
-export function PreferencesProvider({ children }: { children: ReactNode }) {
+export function persistAppearanceAndSidebarPreferences(
+  appearance: AppearanceMode,
+  sidebarCollapsed: boolean,
+  resolvedTheme: 'light' | 'dark',
+  documentElement: Pick<HTMLElement, 'dataset'>,
+  storage: Pick<Storage, 'setItem'>,
+): void {
+  documentElement.dataset.theme = resolvedTheme;
+  documentElement.dataset.appearance = appearance;
+  storage.setItem(STORAGE_KEYS.appearance, appearance);
+  storage.setItem(STORAGE_KEYS.sidebar, String(sidebarCollapsed));
+}
+
+export function PreferencesProvider({
+  children,
+  initialLocale,
+  hasValidLocaleCookie,
+}: {
+  children: ReactNode;
+  initialLocale: Locale;
+  hasValidLocaleCookie: boolean;
+}) {
   const [appearance, setAppearanceState] = useState<AppearanceMode>('system');
-  const [locale, setLocaleState] = useState<Locale>('en');
+  const [locale, setLocaleState] = useState<Locale>(initialLocale);
   const [sidebarCollapsed, setSidebarCollapsedState] = useState(false);
   const [hydrated, setHydrated] = useState(false);
 
   useHydrationLayoutEffect(() => {
     const storedAppearance = localStorage.getItem(STORAGE_KEYS.appearance);
-    const storedLocale = resolveStoredLocale(
-      localStorage.getItem(STORAGE_KEYS.locale),
+    setAppearanceState(
+      isAppearance(storedAppearance) ? storedAppearance : 'system',
     );
-    setAppearanceState(isAppearance(storedAppearance) ? storedAppearance : 'system');
-    setLocaleState(storedLocale);
-    syncDocumentLocale(storedLocale, document.documentElement);
+    // Older clients may have a locale only in localStorage. The server cannot
+    // read it, so migrate it after hydration only when no valid locale cookie
+    // was present. This migration cannot affect the initial server response.
+    if (!hasValidLocaleCookie) {
+      const legacyLocale = localStorage.getItem(LOCALE_STORAGE_KEY);
+      setLocaleState(resolveHydratedLocale(initialLocale, false, legacyLocale));
+    }
     setSidebarCollapsedState(
       localStorage.getItem(STORAGE_KEYS.sidebar) === 'true',
     );
     setHydrated(true);
-  }, []);
+  }, [hasValidLocaleCookie, initialLocale]);
+
+  useHydrationLayoutEffect(() => {
+    if (!hydrated) return;
+
+    syncDocumentLocale(locale, document.documentElement);
+    persistLocalePreference(
+      locale,
+      localStorage,
+      document,
+      window.location.protocol === 'https:',
+    );
+  }, [hydrated, locale]);
 
   useHydrationLayoutEffect(() => {
     if (!hydrated) return;
@@ -85,12 +119,13 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
             ? 'dark'
             : 'light'
           : appearance;
-      document.documentElement.dataset.theme = resolved;
-      document.documentElement.dataset.appearance = appearance;
-      syncDocumentLocale(locale, document.documentElement);
-      localStorage.setItem(STORAGE_KEYS.appearance, appearance);
-      localStorage.setItem(STORAGE_KEYS.locale, locale);
-      localStorage.setItem(STORAGE_KEYS.sidebar, String(sidebarCollapsed));
+      persistAppearanceAndSidebarPreferences(
+        appearance,
+        sidebarCollapsed,
+        resolved,
+        document.documentElement,
+        localStorage,
+      );
     };
 
     applyTheme();
