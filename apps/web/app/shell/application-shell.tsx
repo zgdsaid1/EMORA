@@ -29,9 +29,10 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import {
   createContext,
+  Suspense,
   useContext,
   useEffect,
   useMemo,
@@ -39,7 +40,13 @@ import {
   type ReactNode,
 } from 'react';
 
-import { allNavigationItems, navigationCatalog } from './catalog';
+import {
+  allNavigationItems,
+  findCurrentNavigationItem,
+  isNavigationItemCurrent,
+  navigationCatalog,
+  navigationHref,
+} from './catalog';
 import { navigationLabel } from './navigation-messages';
 import { usePreferences } from './preferences';
 import type { Locale } from './messages';
@@ -143,9 +150,15 @@ function AppearanceControl() {
 function CommandPalette({
   open,
   onClose,
+  context,
+  pathname,
+  activeView,
 }: {
   open: boolean;
   onClose: () => void;
+  context: ResearchContext;
+  pathname: string;
+  activeView?: string | null;
 }) {
   const { locale, t } = usePreferences();
   const [query, setQuery] = useState('');
@@ -203,17 +216,29 @@ function CommandPalette({
           </button>
         </div>
         <ul className="command-results">
-          {filtered.map((item) => (
-            <li key={`${item.href}-${item.key}`}>
-              <Link href={item.href} onClick={onClose}>
-                <span>{item.label}</span>
-                <span className="command-result-status">
-                  {t(item.available ? 'implemented' : 'planned')}
-                  <span aria-hidden="true">↵</span>
-                </span>
-              </Link>
-            </li>
-          ))}
+          {filtered.map((item) => {
+            const current = isNavigationItemCurrent(item, pathname, activeView);
+            return (
+              <li key={`${item.href}-${item.key}`}>
+                <Link
+                  aria-current={
+                    current && item.key === 'stateHistory' ? 'page' : undefined
+                  }
+                  href={navigationHref(item, {
+                    projectId: context.project?.id,
+                    profileId: context.profile?.id,
+                  })}
+                  onClick={onClose}
+                >
+                  <span>{item.label}</span>
+                  <span className="command-result-status">
+                    {t(item.available ? 'implemented' : 'planned')}
+                    <span aria-hidden="true">↵</span>
+                  </span>
+                </Link>
+              </li>
+            );
+          })}
           {filtered.length === 0 && <li className="command-empty">{t('noResults')}</li>}
         </ul>
       </section>
@@ -273,9 +298,13 @@ function GlobalContextBar({ context }: { context: ResearchContext }) {
 function Sidebar({
   mobileOpen,
   onMobileClose,
+  context,
+  activeView,
 }: {
   mobileOpen: boolean;
   onMobileClose: () => void;
+  context: ResearchContext;
+  activeView?: string | null;
 }) {
   const pathname = usePathname();
   const {
@@ -335,13 +364,23 @@ function Sidebar({
             const Icon = sectionIcons[section.icon];
             const sectionName = navigationLabel(locale, section.key);
             if (isCollapsed) {
-              const destination = section.items[0];
+              const destination =
+                section.items.find((item) =>
+                  isNavigationItemCurrent(item, pathname, activeView),
+                ) ?? section.items[0];
               return (
                 <Link
                   aria-label={sectionName}
-                  aria-current={destination.href === pathname ? 'page' : undefined}
+                  aria-current={
+                    isNavigationItemCurrent(destination, pathname, activeView)
+                      ? 'page'
+                      : undefined
+                  }
                   className="collapsed-nav-item"
-                  href={destination.href}
+                  href={navigationHref(destination, {
+                    projectId: context.project?.id,
+                    profileId: context.profile?.id,
+                  })}
                   key={section.key}
                   onClick={onMobileClose}
                   title={sectionName}
@@ -358,20 +397,35 @@ function Sidebar({
                   <ChevronDown aria-hidden="true" className="section-chevron" size={14} />
                 </summary>
                 <ul>
-                  {section.items.map((item) => (
-                    <li key={`${item.href}-${item.key}`}>
-                      <Link
-                        aria-current={item.href === pathname ? 'page' : undefined}
-                        className={item.href === pathname ? 'is-current' : undefined}
-                        href={item.href}
-                        onClick={onMobileClose}
-                      >
-                        <span className={`availability-mark${item.available ? ' is-available' : ''}`} aria-hidden="true" />
-                        <span>{navigationLabel(locale, item.key)}</span>
-                        <span className="sr-only">{t(item.available ? 'implemented' : 'planned')}</span>
-                      </Link>
-                    </li>
-                  ))}
+                  {section.items.map((item) => {
+                    const current = isNavigationItemCurrent(
+                      item,
+                      pathname,
+                      activeView,
+                    );
+                    return (
+                      <li key={`${item.href}-${item.key}`}>
+                        <Link
+                          aria-current={current ? 'page' : undefined}
+                          className={current ? 'is-current' : undefined}
+                          href={navigationHref(item, {
+                            projectId: context.project?.id,
+                            profileId: context.profile?.id,
+                          })}
+                          onClick={onMobileClose}
+                        >
+                          <span
+                            className={`availability-mark${item.available ? ' is-available' : ''}`}
+                            aria-hidden="true"
+                          />
+                          <span>{navigationLabel(locale, item.key)}</span>
+                          <span className="sr-only">
+                            {t(item.available ? 'implemented' : 'planned')}
+                          </span>
+                        </Link>
+                      </li>
+                    );
+                  })}
                 </ul>
               </details>
             );
@@ -382,8 +436,10 @@ function Sidebar({
   );
 }
 
-export function ApplicationShell({ children }: { children: ReactNode }) {
+function ApplicationShellContent({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const activeView = searchParams.get('view');
   const { t } = usePreferences();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [commandOpen, setCommandOpen] = useState(false);
@@ -402,7 +458,7 @@ export function ApplicationShell({ children }: { children: ReactNode }) {
   }, []);
 
   const closeCommand = () => setCommandOpen(false);
-  const currentItem = allNavigationItems.find((item) => item.href === pathname);
+  const currentItem = findCurrentNavigationItem(pathname, activeView);
   const { locale } = usePreferences();
 
   if (authPage) {
@@ -419,7 +475,13 @@ export function ApplicationShell({ children }: { children: ReactNode }) {
           </div>
         </header>
           <div className="auth-frame-content">{children}</div>
-        <CommandPalette open={commandOpen} onClose={closeCommand} />
+        <CommandPalette
+          context={context}
+          pathname={pathname}
+          activeView={activeView}
+          open={commandOpen}
+          onClose={closeCommand}
+        />
       </div>
     );
   }
@@ -428,7 +490,12 @@ export function ApplicationShell({ children }: { children: ReactNode }) {
     <ContextUpdate.Provider value={setContext}>
       <div className={`application-shell${mobileOpen ? ' mobile-menu-open' : ''}`}>
         <a className="skip-link" href="#workspace-main">{t('skipToContent')}</a>
-        <Sidebar mobileOpen={mobileOpen} onMobileClose={() => setMobileOpen(false)} />
+        <Sidebar
+          activeView={activeView}
+          context={context}
+          mobileOpen={mobileOpen}
+          onMobileClose={() => setMobileOpen(false)}
+        />
         <div className="shell-main-column">
           <header className="global-header">
             <button
@@ -458,9 +525,23 @@ export function ApplicationShell({ children }: { children: ReactNode }) {
             <div className="workspace-content">{children}</div>
           </div>
         </div>
-        <CommandPalette open={commandOpen} onClose={closeCommand} />
+        <CommandPalette
+          context={context}
+          pathname={pathname}
+          activeView={activeView}
+          open={commandOpen}
+          onClose={closeCommand}
+        />
       </div>
     </ContextUpdate.Provider>
+  );
+}
+
+export function ApplicationShell({ children }: { children: ReactNode }) {
+  return (
+    <Suspense fallback={null}>
+      <ApplicationShellContent>{children}</ApplicationShellContent>
+    </Suspense>
   );
 }
 
