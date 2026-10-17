@@ -259,7 +259,9 @@ test.describe.serial('Product Reality Validation Slice 1', () => {
     await page.getByRole('button', { name: 'Sign in' }).click();
 
     await expect(page).toHaveURL(/\/app/);
-    await expect(page.getByText(/Signed in as/)).toContainText(USER_A.email);
+    await expect(
+      page.getByRole('main').getByText(/Signed in as/),
+    ).toContainText(USER_A.email);
     await expect(
       page.getByText(
         'No computational state has been computed for this profile yet.',
