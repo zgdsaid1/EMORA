@@ -140,7 +140,11 @@ test.describe.serial('Product Reality Validation Slice 1', () => {
     await page.getByRole('button', { name: 'Sign in' }).click();
 
     await expect(page).toHaveURL(/\/app$/);
-    await expect(page.getByText(/Signed in as/)).toContainText(USER_A.email);
+    // Assert the identity inside the authenticated workspace landmark. The
+    // document can contain another matching paragraph during route hydration.
+    await expect(
+      page.getByRole('main').getByText(/Signed in as/),
+    ).toContainText(USER_A.email);
   });
 
   test('bootstrap the first workspace through the real empty-state form', async () => {
