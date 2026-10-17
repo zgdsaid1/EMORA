@@ -215,9 +215,15 @@ test('authenticated State History stays scoped, ordered, and localized', async (
   );
   expect(firstHistoryUrl.searchParams.get('limit')).toBe('10');
 
-  // The accessible label is translated on each selection, so keep the locator
-  // anchored to the stable global-header control instead of its changing name.
-  const language = page.locator('.global-header .shell-toolbar select');
+  // The workspace header contains the route context and its locale control.
+  // Scope through that semantic banner so another shell control cannot make
+  // the selector ambiguous; the breadcrumb remains stable across locales.
+  const workspaceHeader = page
+    .getByRole('banner')
+    .filter({ has: page.locator('.header-path') });
+  await expect(workspaceHeader).toHaveCount(1);
+  const language = workspaceHeader.getByRole('combobox');
+  await expect(language).toHaveCount(1);
   await language.selectOption('fr');
   await expect(page.locator('html')).toHaveAttribute('lang', 'fr');
   await expect(page.locator('html')).toHaveAttribute('dir', 'ltr');

@@ -34,6 +34,13 @@ export interface NavigationSection {
   readonly items: readonly NavigationItem[];
 }
 
+export interface NavigationContext {
+  readonly projectId?: string;
+  readonly profileId?: string;
+}
+
+export const STATE_HISTORY_VIEW = 'state-history';
+
 const item = (
   key: NavigationKey,
   slug: string,
@@ -69,7 +76,7 @@ export const navigationCatalog: readonly NavigationSection[] = [
     icon: 'state',
     items: [
       item('currentState', 'current-state', true),
-      item('stateHistory', 'state-engine/state-history'),
+      item('stateHistory', 'state-engine/state-history', true),
       item('transitions', 'state-engine/transitions'),
       item('dynamics', 'state-engine/dynamics'),
       item('modelVersions', 'state-engine/model-versions'),
@@ -265,6 +272,44 @@ export const allNavigationItems = navigationCatalog.flatMap(
 
 export function findNavigationItem(path: string): NavigationItem | undefined {
   return allNavigationItems.find((entry) => entry.href === path);
+}
+
+export function navigationHref(
+  entry: NavigationItem,
+  context: NavigationContext = {},
+): string {
+  if (entry.key !== 'stateHistory') return entry.href;
+
+  const search = new URLSearchParams();
+  if (context.projectId) search.set('projectId', context.projectId);
+  if (context.profileId) search.set('profileId', context.profileId);
+  search.set('view', STATE_HISTORY_VIEW);
+  return `/app?${search.toString()}`;
+}
+
+export function isNavigationItemCurrent(
+  entry: NavigationItem,
+  pathname: string,
+  view?: string | null,
+): boolean {
+  if (entry.key === 'stateHistory') {
+    return pathname === '/app' && view === STATE_HISTORY_VIEW;
+  }
+
+  if (pathname === '/app' && view === STATE_HISTORY_VIEW) {
+    return false;
+  }
+
+  return entry.href === pathname;
+}
+
+export function findCurrentNavigationItem(
+  pathname: string,
+  view?: string | null,
+): NavigationItem | undefined {
+  return allNavigationItems.find((entry) =>
+    isNavigationItemCurrent(entry, pathname, view),
+  );
 }
 
 export type { LucideIcon };
