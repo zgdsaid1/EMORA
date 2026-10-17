@@ -15,6 +15,7 @@ import { BootstrapForm } from './bootstrap-form';
 import { LatestStatePanel } from './latest-state-panel';
 import { LogoutButton } from './logout-button';
 import { ProfileOnboardingForm } from './profile-onboarding-form';
+import { StateHistoryPanel } from './state-history-panel';
 import { TransitionForm } from './transition-form';
 import { usePreferences } from './shell/preferences';
 
@@ -114,8 +115,7 @@ export function WorkspaceView({
                       }
                     >
                       <span>
-                        {t('wsExternalReference')}{' '}
-                        {candidate.externalReference}
+                        {t('wsExternalReference')} {candidate.externalReference}
                       </span>
                       <span className="workspace-item-id">
                         {candidate.profileId}
@@ -146,6 +146,12 @@ export function WorkspaceView({
                 {t('wsProfileLabel')} <code>{profile.profileId}</code>
               </p>
               <LatestStatePanel
+                projectId={project.projectId}
+                profileId={profile.profileId}
+                refreshKey={latestStateRefreshKey}
+              />
+              <StateHistoryPanel
+                key={`${project.projectId}:${profile.profileId}`}
                 projectId={project.projectId}
                 profileId={profile.profileId}
                 refreshKey={latestStateRefreshKey}

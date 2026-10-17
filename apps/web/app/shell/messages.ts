@@ -35,14 +35,18 @@ export const messages = {
     contextUnresolved: 'Context not specified',
     currentWorkspace: 'Current workspace',
     disclosureLabel: 'Scientific disclosure',
-    disclosure: 'Computational, model-estimated emotional state — not a measurement of a person’s psychological or emotional state.',
-    disclosureText: 'EMORA output is a computational, model-estimated emotional state derived from the event and context you supplied, using EMORA\'s deterministic model. It is not a measurement of a person\'s true emotional state. It is not a detection of a person\'s true emotional state. It is not a diagnosis. It is not a clinical assessment. It does not establish psychological validity, and it must not be used as evidence of what a person actually feels.',
+    disclosure:
+      'Computational, model-estimated emotional state — not a measurement of a person’s psychological or emotional state.',
+    disclosureText:
+      "EMORA output is a computational, model-estimated emotional state derived from the event and context you supplied, using EMORA's deterministic model. It is not a measurement of a person's true emotional state. It is not a detection of a person's true emotional state. It is not a diagnosis. It is not a clinical assessment. It does not establish psychological validity, and it must not be used as evidence of what a person actually feels.",
     moduleStatus: 'IMPLEMENTATION STATUS',
     modulePurpose: 'PURPOSE',
     reservedFunctionality: 'RESERVED FUNCTIONALITY',
     notImplemented: 'Not yet implemented',
-    placeholderPurpose: 'This location is reserved in the EMORA research instrument. No feature or data operation is available here yet.',
-    reservedNote: 'Navigation is present for information architecture only; it does not imply an implemented capability.',
+    placeholderPurpose:
+      'This location is reserved in the EMORA research instrument. No feature or data operation is available here yet.',
+    reservedNote:
+      'Navigation is present for information architecture only; it does not imply an implemented capability.',
     metric: 'Metric',
     observed: 'Observed',
     derived: 'Derived',
@@ -82,12 +86,16 @@ export const messages = {
     alreadyAccount: 'Already have an account?',
     forgotPassword: 'Forgot password?',
     resetUnavailableHeading: 'Password reset unavailable',
-    resetUnavailableDescription: 'Password reset is currently unavailable because reset email delivery is not configured.',
+    resetUnavailableDescription:
+      'Password reset is currently unavailable because reset email delivery is not configured.',
     returnToSignIn: 'Return to sign in',
     resetRequestHeading: 'Reset your password',
-    resetRequestDescription: 'Enter the email address associated with your account.',
-    resetRequestSuccess: 'If this email is associated with an account, you will receive password reset instructions.',
-    resetRequestFailed: 'We couldn’t process your request right now. Please try again.',
+    resetRequestDescription:
+      'Enter the email address associated with your account.',
+    resetRequestSuccess:
+      'If this email is associated with an account, you will receive password reset instructions.',
+    resetRequestFailed:
+      'We couldn’t process your request right now. Please try again.',
     sendResetLink: 'Send reset link',
     invalidEmail: 'Enter a valid email address.',
     resetPasswordHeading: 'Choose a new password',
@@ -101,7 +109,8 @@ export const messages = {
     resetSuccess: 'Your password has been reset. You can now sign in.',
     overviewKicker: 'OBSERVATORY / 00',
     overviewTitle: 'Research observatory',
-    overviewDescription: 'A structured workspace for computational, model-estimated state research.',
+    overviewDescription:
+      'A structured workspace for computational, model-estimated state research.',
     implementationCount: 'Implemented surfaces',
     availableRoutes: 'Available routes',
     navigationSections: 'Navigation sections',
@@ -144,11 +153,13 @@ export const messages = {
     authenticationFailure: 'Authentication failed.',
     scientificTable: 'Scientific data table',
     wsProfileIdentityDisclosureLabel: 'Profile identity disclosure',
-    wsProfileIdentityDisclosure: 'This profile is a model-configuration record used for computation; it is not a psychological assessment of a person.',
+    wsProfileIdentityDisclosure:
+      'This profile is a model-configuration record used for computation; it is not a psychological assessment of a person.',
     wsTitle: 'HYBRID EMOTIONAL ENGINE',
     wsSignedInAs: 'Signed in as',
     wsNoProjectHeading: 'No authorized project is available',
-    wsNoProjectBody: 'This workspace has no project that your account may use. Any organization and initial project created here will be owned by your account. Existing organizations are not available through this bootstrap.',
+    wsNoProjectBody:
+      'This workspace has no project that your account may use. Any organization and initial project created here will be owned by your account. Existing organizations are not available through this bootstrap.',
     wsOrganizationName: 'Organization name',
     wsOrganizationSlug: 'Organization slug',
     wsProjectName: 'Initial project name',
@@ -158,17 +169,24 @@ export const messages = {
     wsWorkspaceInitFailed: 'The workspace could not be initialized.',
     wsProjects: 'Projects',
     wsProfiles: 'Profiles',
-    wsNoProfilesBody: 'No profile record is available in this project yet. Create one below. Profiles are model-configuration records used for computation.',
+    wsNoProfilesBody:
+      'No profile record is available in this project yet. Create one below. Profiles are model-configuration records used for computation.',
     wsExternalReference: 'External reference',
     wsProjectLabel: 'Project',
     wsProfileLabel: 'Profile',
     wsNoProfileSelectedHeading: 'No profile is selected',
-    wsNoProfileSelectedBody: 'Select a profile above to compute and read computational states for it.',
+    wsNoProfileSelectedBody:
+      'Select a profile above to compute and read computational states for it.',
     wsLatestHeading: 'Most recent computational state',
     wsRefreshState: 'Refresh state',
     wsReading: 'Reading...',
-    wsLatestEmpty: 'No computational state has been computed for this profile yet.',
+    wsLatestEmpty:
+      'No computational state has been computed for this profile yet.',
     wsLatestError: 'The latest state could not be read.',
+    wsHistoryHeading: 'State history',
+    wsHistoryEmpty: 'No computed states have been recorded for this profile.',
+    wsHistoryError: 'State history could not be read. Please try again.',
+    wsHistoryRetry: 'Retry history read',
     wsEmotionVector: 'Emotion vector',
     wsDimensions: 'Dimensions',
     wsModelIdentity: 'Model identity',
@@ -202,8 +220,10 @@ export const messages = {
     wsEvent: 'event',
     wsState: 'state',
     wsCreateProfile: 'Create a profile',
-    wsCreateProfileIntro: 'A profile is a model-configuration record used for computation. Create one for this project below.',
-    wsExternalReferenceHint: '1 to 128 printable characters, unique within this project.',
+    wsCreateProfileIntro:
+      'A profile is a model-configuration record used for computation. Create one for this project below.',
+    wsExternalReferenceHint:
+      '1 to 128 printable characters, unique within this project.',
     wsModelConfiguration: 'Model configuration',
     wsFieldEmotionalSensitivity: 'Emotional sensitivity (0 to 1)',
     wsFieldBaselineTrust: 'Baseline trust (0 to 1)',
@@ -212,18 +232,23 @@ export const messages = {
     wsFieldNostalgiaSensitivity: 'Nostalgia sensitivity (0 to 1)',
     wsFieldJealousySensitivity: 'Jealousy sensitivity (0 to 1)',
     wsAdditionalTraits: 'Additional traits (optional JSON object)',
-    wsAdditionalTraitsHint: 'Metadata only; never consumed by the deterministic dynamics.',
+    wsAdditionalTraitsHint:
+      'Metadata only; never consumed by the deterministic dynamics.',
     wsCreateProfileAction: 'Create profile',
     wsCreatingProfile: 'Creating...',
     wsExtRefLength: 'External reference must be 1 to 128 characters.',
-    wsExtRefPrintable: 'External reference may contain printable characters only.',
+    wsExtRefPrintable:
+      'External reference may contain printable characters only.',
     wsTraitsObject: 'Additional traits must be a JSON object.',
     wsProfileCreateFailed: 'The profile could not be created.',
     wsProfileErrorUnauthenticated: 'Your session has expired. Sign in again.',
-    wsProfileErrorForbidden: 'You do not have permission to create profiles in this project.',
+    wsProfileErrorForbidden:
+      'You do not have permission to create profiles in this project.',
     wsProfileErrorInvalidInput: 'The profile request is invalid.',
-    wsProfileErrorInvalidContentType: 'The profile request has an unsupported format.',
-    wsProfileErrorExternalReferenceConflict: 'A profile with this external reference already exists in this project.',
+    wsProfileErrorInvalidContentType:
+      'The profile request has an unsupported format.',
+    wsProfileErrorExternalReferenceConflict:
+      'A profile with this external reference already exists in this project.',
     wsProfileCreated: 'Profile created.',
     wsCreatedAt: 'Created at',
     wsReloadWorkspace: 'Reload the workspace to see the new profile.',
@@ -264,14 +289,18 @@ export const messages = {
     contextUnresolved: 'Contexte non précisé',
     currentWorkspace: 'Espace de travail actuel',
     disclosureLabel: 'Information scientifique',
-    disclosure: 'État émotionnel calculé et estimé par un modèle — il ne mesure pas l’état psychologique ou émotionnel d’une personne.',
-    disclosureText: 'Le résultat d’EMORA est un état émotionnel calculé et estimé par un modèle, dérivé de l’événement et du contexte que vous avez fournis, à l’aide du modèle déterministe d’EMORA. Il ne constitue pas une mesure de l’état émotionnel réel d’une personne. Il ne constitue pas une détection de l’état émotionnel réel d’une personne. Il ne s’agit pas d’un diagnostic. Il ne s’agit pas d’une évaluation clinique. Il n’établit pas la validité psychologique et ne doit pas être utilisé comme preuve de ce qu’une personne ressent réellement.',
+    disclosure:
+      'État émotionnel calculé et estimé par un modèle — il ne mesure pas l’état psychologique ou émotionnel d’une personne.',
+    disclosureText:
+      'Le résultat d’EMORA est un état émotionnel calculé et estimé par un modèle, dérivé de l’événement et du contexte que vous avez fournis, à l’aide du modèle déterministe d’EMORA. Il ne constitue pas une mesure de l’état émotionnel réel d’une personne. Il ne constitue pas une détection de l’état émotionnel réel d’une personne. Il ne s’agit pas d’un diagnostic. Il ne s’agit pas d’une évaluation clinique. Il n’établit pas la validité psychologique et ne doit pas être utilisé comme preuve de ce qu’une personne ressent réellement.',
     moduleStatus: 'ÉTAT D’IMPLÉMENTATION',
     modulePurpose: 'OBJECTIF',
     reservedFunctionality: 'FONCTIONNALITÉS RÉSERVÉES',
     notImplemented: 'Pas encore implémenté',
-    placeholderPurpose: 'Cet emplacement est réservé dans l’instrument de recherche EMORA. Aucune fonctionnalité ni opération sur les données n’y est encore disponible.',
-    reservedNote: 'La navigation présente uniquement l’architecture de l’information; elle ne signifie pas qu’une capacité est implémentée.',
+    placeholderPurpose:
+      'Cet emplacement est réservé dans l’instrument de recherche EMORA. Aucune fonctionnalité ni opération sur les données n’y est encore disponible.',
+    reservedNote:
+      'La navigation présente uniquement l’architecture de l’information; elle ne signifie pas qu’une capacité est implémentée.',
     metric: 'Mesure',
     observed: 'Observé',
     derived: 'Dérivé',
@@ -311,12 +340,16 @@ export const messages = {
     alreadyAccount: 'Vous avez déjà un compte ?',
     forgotPassword: 'Mot de passe oublié ?',
     resetUnavailableHeading: 'Réinitialisation indisponible',
-    resetUnavailableDescription: 'La réinitialisation du mot de passe est indisponible, car l’envoi des e-mails n’est pas configuré.',
+    resetUnavailableDescription:
+      'La réinitialisation du mot de passe est indisponible, car l’envoi des e-mails n’est pas configuré.',
     returnToSignIn: 'Retour à la connexion',
     resetRequestHeading: 'Réinitialiser votre mot de passe',
-    resetRequestDescription: 'Saisissez l’adresse e-mail associée à votre compte.',
-    resetRequestSuccess: 'Si cette adresse e-mail est associée à un compte, vous recevrez les instructions de réinitialisation.',
-    resetRequestFailed: 'Nous n’avons pas pu traiter votre demande pour le moment. Veuillez réessayer.',
+    resetRequestDescription:
+      'Saisissez l’adresse e-mail associée à votre compte.',
+    resetRequestSuccess:
+      'Si cette adresse e-mail est associée à un compte, vous recevrez les instructions de réinitialisation.',
+    resetRequestFailed:
+      'Nous n’avons pas pu traiter votre demande pour le moment. Veuillez réessayer.',
     sendResetLink: 'Envoyer le lien',
     invalidEmail: 'Saisissez une adresse e-mail valide.',
     resetPasswordHeading: 'Choisir un nouveau mot de passe',
@@ -327,10 +360,12 @@ export const messages = {
     passwordTooShort: 'Le mot de passe doit contenir au moins 8 caractères.',
     resetMissingToken: 'Le lien de réinitialisation est invalide ou a expiré.',
     resetLinkInvalid: 'Le lien de réinitialisation est invalide ou a expiré.',
-    resetSuccess: 'Votre mot de passe a été réinitialisé. Vous pouvez maintenant vous connecter.',
+    resetSuccess:
+      'Votre mot de passe a été réinitialisé. Vous pouvez maintenant vous connecter.',
     overviewKicker: 'OBSERVATOIRE / 00',
     overviewTitle: 'Observatoire de recherche',
-    overviewDescription: 'Un espace structuré pour la recherche sur les états calculés et estimés par un modèle.',
+    overviewDescription:
+      'Un espace structuré pour la recherche sur les états calculés et estimés par un modèle.',
     implementationCount: 'Surfaces implémentées',
     availableRoutes: 'Routes disponibles',
     navigationSections: 'Sections de navigation',
@@ -373,11 +408,13 @@ export const messages = {
     authenticationFailure: 'Échec de l’authentification.',
     scientificTable: 'Tableau de données scientifiques',
     wsProfileIdentityDisclosureLabel: 'Information sur l’identité du profil',
-    wsProfileIdentityDisclosure: 'Ce profil est un enregistrement de configuration du modèle utilisé pour le calcul ; il ne constitue pas une évaluation psychologique d’une personne.',
+    wsProfileIdentityDisclosure:
+      'Ce profil est un enregistrement de configuration du modèle utilisé pour le calcul ; il ne constitue pas une évaluation psychologique d’une personne.',
     wsTitle: 'MOTEUR ÉMOTIONNEL HYBRIDE',
     wsSignedInAs: 'Connecté en tant que',
     wsNoProjectHeading: 'Aucun projet autorisé n’est disponible',
-    wsNoProjectBody: 'Cet espace de travail ne contient aucun projet que votre compte peut utiliser. Toute organisation et tout projet initial créés ici appartiendront à votre compte. Les organisations existantes ne sont pas accessibles via cette initialisation.',
+    wsNoProjectBody:
+      'Cet espace de travail ne contient aucun projet que votre compte peut utiliser. Toute organisation et tout projet initial créés ici appartiendront à votre compte. Les organisations existantes ne sont pas accessibles via cette initialisation.',
     wsOrganizationName: 'Nom de l’organisation',
     wsOrganizationSlug: 'Identifiant court de l’organisation',
     wsProjectName: 'Nom du projet initial',
@@ -387,17 +424,23 @@ export const messages = {
     wsWorkspaceInitFailed: 'L’espace de travail n’a pas pu être initialisé.',
     wsProjects: 'Projets',
     wsProfiles: 'Profils',
-    wsNoProfilesBody: 'Aucun enregistrement de profil n’est encore disponible dans ce projet. Créez-en un ci-dessous. Les profils sont des enregistrements de configuration du modèle utilisés pour le calcul.',
+    wsNoProfilesBody:
+      'Aucun enregistrement de profil n’est encore disponible dans ce projet. Créez-en un ci-dessous. Les profils sont des enregistrements de configuration du modèle utilisés pour le calcul.',
     wsExternalReference: 'Référence externe',
     wsProjectLabel: 'Projet',
     wsProfileLabel: 'Profil',
     wsNoProfileSelectedHeading: 'Aucun profil n’est sélectionné',
-    wsNoProfileSelectedBody: 'Sélectionnez un profil ci-dessus pour calculer et lire ses états calculés.',
+    wsNoProfileSelectedBody:
+      'Sélectionnez un profil ci-dessus pour calculer et lire ses états calculés.',
     wsLatestHeading: 'État calculé le plus récent',
     wsRefreshState: 'Actualiser l’état',
     wsReading: 'Lecture…',
     wsLatestEmpty: 'Aucun état calculé n’existe encore pour ce profil.',
     wsLatestError: 'Le dernier état n’a pas pu être lu.',
+    wsHistoryHeading: 'Historique des états',
+    wsHistoryEmpty: 'Aucun état calculé n’a été enregistré pour ce profil.',
+    wsHistoryError: 'L’historique des états n’a pas pu être lu. Réessayez.',
+    wsHistoryRetry: 'Réessayer la lecture',
     wsEmotionVector: 'Vecteur émotionnel',
     wsDimensions: 'Dimensions',
     wsModelIdentity: 'Identité du modèle',
@@ -431,8 +474,10 @@ export const messages = {
     wsEvent: 'événement',
     wsState: 'état',
     wsCreateProfile: 'Créer un profil',
-    wsCreateProfileIntro: 'Un profil est un enregistrement de configuration du modèle utilisé pour le calcul. Créez-en un pour ce projet ci-dessous.',
-    wsExternalReferenceHint: '1 à 128 caractères imprimables, unique au sein de ce projet.',
+    wsCreateProfileIntro:
+      'Un profil est un enregistrement de configuration du modèle utilisé pour le calcul. Créez-en un pour ce projet ci-dessous.',
+    wsExternalReferenceHint:
+      '1 à 128 caractères imprimables, unique au sein de ce projet.',
     wsModelConfiguration: 'Configuration du modèle',
     wsFieldEmotionalSensitivity: 'Sensibilité émotionnelle (0 à 1)',
     wsFieldBaselineTrust: 'Confiance de base (0 à 1)',
@@ -441,21 +486,29 @@ export const messages = {
     wsFieldNostalgiaSensitivity: 'Sensibilité à la nostalgie (0 à 1)',
     wsFieldJealousySensitivity: 'Sensibilité à la jalousie (0 à 1)',
     wsAdditionalTraits: 'Traits supplémentaires (objet JSON facultatif)',
-    wsAdditionalTraitsHint: 'Métadonnées uniquement ; jamais utilisées par la dynamique déterministe.',
+    wsAdditionalTraitsHint:
+      'Métadonnées uniquement ; jamais utilisées par la dynamique déterministe.',
     wsCreateProfileAction: 'Créer le profil',
     wsCreatingProfile: 'Création…',
-    wsExtRefLength: 'La référence externe doit comporter de 1 à 128 caractères.',
-    wsExtRefPrintable: 'La référence externe ne peut contenir que des caractères imprimables.',
+    wsExtRefLength:
+      'La référence externe doit comporter de 1 à 128 caractères.',
+    wsExtRefPrintable:
+      'La référence externe ne peut contenir que des caractères imprimables.',
     wsTraitsObject: 'Les traits supplémentaires doivent être un objet JSON.',
     wsProfileCreateFailed: 'Le profil n’a pas pu être créé.',
     wsProfileErrorUnauthenticated: 'Votre session a expiré. Reconnectez-vous.',
-    wsProfileErrorForbidden: 'Vous n’avez pas l’autorisation de créer des profils dans ce projet.',
-    wsProfileErrorInvalidInput: 'La demande de création du profil est invalide.',
-    wsProfileErrorInvalidContentType: 'Le format de la demande de profil n’est pas pris en charge.',
-    wsProfileErrorExternalReferenceConflict: 'Un profil avec cette référence externe existe déjà dans ce projet.',
+    wsProfileErrorForbidden:
+      'Vous n’avez pas l’autorisation de créer des profils dans ce projet.',
+    wsProfileErrorInvalidInput:
+      'La demande de création du profil est invalide.',
+    wsProfileErrorInvalidContentType:
+      'Le format de la demande de profil n’est pas pris en charge.',
+    wsProfileErrorExternalReferenceConflict:
+      'Un profil avec cette référence externe existe déjà dans ce projet.',
     wsProfileCreated: 'Profil créé.',
     wsCreatedAt: 'Créé à',
-    wsReloadWorkspace: 'Rechargez l’espace de travail pour voir le nouveau profil.',
+    wsReloadWorkspace:
+      'Rechargez l’espace de travail pour voir le nouveau profil.',
   },
   ar: {
     brand: 'EMORA',
@@ -493,14 +546,18 @@ export const messages = {
     contextUnresolved: 'السياق غير محدد',
     currentWorkspace: 'مساحة العمل الحالية',
     disclosureLabel: 'إفصاح علمي',
-    disclosure: 'حالة عاطفية حاسوبية مقدّرة بالنموذج، وليست قياساً للحالة النفسية أو العاطفية لشخص.',
-    disclosureText: 'مخرَج EMORA هو حالة عاطفية حاسوبية مقدّرة بواسطة نموذج، مشتقة من الحدث والسياق اللذين قدّمتهما، باستخدام نموذج EMORA الحتمي. ولا تمثّل هذه الحالة قياسًا للحالة العاطفية الحقيقية لشخص. كما أنها ليست كشفًا عن الحالة العاطفية الحقيقية لشخص. وليست تشخيصًا. وليست تقييمًا سريريًا. ولا تثبت الصلاحية النفسية، ولا يجوز استخدامها دليلًا على ما يشعر به الشخص فعليًا.',
+    disclosure:
+      'حالة عاطفية حاسوبية مقدّرة بالنموذج، وليست قياساً للحالة النفسية أو العاطفية لشخص.',
+    disclosureText:
+      'مخرَج EMORA هو حالة عاطفية حاسوبية مقدّرة بواسطة نموذج، مشتقة من الحدث والسياق اللذين قدّمتهما، باستخدام نموذج EMORA الحتمي. ولا تمثّل هذه الحالة قياسًا للحالة العاطفية الحقيقية لشخص. كما أنها ليست كشفًا عن الحالة العاطفية الحقيقية لشخص. وليست تشخيصًا. وليست تقييمًا سريريًا. ولا تثبت الصلاحية النفسية، ولا يجوز استخدامها دليلًا على ما يشعر به الشخص فعليًا.',
     moduleStatus: 'حالة التنفيذ',
     modulePurpose: 'الغرض',
     reservedFunctionality: 'وظائف محجوزة',
     notImplemented: 'لم يُنفذ بعد',
-    placeholderPurpose: 'هذا الموضع محجوز ضمن أداة EMORA البحثية. لا تتوفر هنا بعد أي ميزة أو عملية بيانات.',
-    reservedNote: 'التنقل معروض لبنية المعلومات فقط، ولا يعني أن القدرة قد نُفذت.',
+    placeholderPurpose:
+      'هذا الموضع محجوز ضمن أداة EMORA البحثية. لا تتوفر هنا بعد أي ميزة أو عملية بيانات.',
+    reservedNote:
+      'التنقل معروض لبنية المعلومات فقط، ولا يعني أن القدرة قد نُفذت.',
     metric: 'مقياس',
     observed: 'مرصود',
     derived: 'مشتق',
@@ -540,12 +597,15 @@ export const messages = {
     alreadyAccount: 'لديك حساب بالفعل؟',
     forgotPassword: 'هل نسيت كلمة المرور؟',
     resetUnavailableHeading: 'إعادة تعيين كلمة المرور غير متاحة',
-    resetUnavailableDescription: 'إعادة تعيين كلمة المرور غير متاحة حالياً لأن إرسال رسائل البريد الإلكتروني غير مُعد.',
+    resetUnavailableDescription:
+      'إعادة تعيين كلمة المرور غير متاحة حالياً لأن إرسال رسائل البريد الإلكتروني غير مُعد.',
     returnToSignIn: 'العودة إلى تسجيل الدخول',
     resetRequestHeading: 'إعادة تعيين كلمة المرور',
     resetRequestDescription: 'أدخل عنوان البريد الإلكتروني المرتبط بحسابك.',
-    resetRequestSuccess: 'إذا كان هذا البريد الإلكتروني مرتبطاً بحساب، فستتلقى تعليمات إعادة تعيين كلمة المرور.',
-    resetRequestFailed: 'تعذّر علينا معالجة طلبك حالياً. يرجى المحاولة مرة أخرى.',
+    resetRequestSuccess:
+      'إذا كان هذا البريد الإلكتروني مرتبطاً بحساب، فستتلقى تعليمات إعادة تعيين كلمة المرور.',
+    resetRequestFailed:
+      'تعذّر علينا معالجة طلبك حالياً. يرجى المحاولة مرة أخرى.',
     sendResetLink: 'إرسال رابط الإعادة',
     invalidEmail: 'أدخل عنوان بريد إلكتروني صالحاً.',
     resetPasswordHeading: 'اختر كلمة مرور جديدة',
@@ -559,7 +619,8 @@ export const messages = {
     resetSuccess: 'تمت إعادة تعيين كلمة المرور. يمكنك الآن تسجيل الدخول.',
     overviewKicker: 'المرصد / 00',
     overviewTitle: 'مرصد البحث',
-    overviewDescription: 'مساحة منظمة للبحث في الحالات الحاسوبية المقدّرة بالنموذج.',
+    overviewDescription:
+      'مساحة منظمة للبحث في الحالات الحاسوبية المقدّرة بالنموذج.',
     implementationCount: 'واجهات منفذة',
     availableRoutes: 'المسارات المتاحة',
     navigationSections: 'أقسام التنقل',
@@ -597,11 +658,13 @@ export const messages = {
     authenticationFailure: 'فشل المصادقة.',
     scientificTable: 'جدول البيانات العلمية',
     wsProfileIdentityDisclosureLabel: 'إفصاح عن هوية الملف',
-    wsProfileIdentityDisclosure: 'هذا الملف سجل لإعدادات النموذج يُستخدم في الحساب؛ وهو ليس تقييمًا نفسيًا لشخص.',
+    wsProfileIdentityDisclosure:
+      'هذا الملف سجل لإعدادات النموذج يُستخدم في الحساب؛ وهو ليس تقييمًا نفسيًا لشخص.',
     wsTitle: 'المحرك العاطفي الهجين',
     wsSignedInAs: 'تم تسجيل الدخول بصفة',
     wsNoProjectHeading: 'لا يتوفر أي مشروع مصرَّح به',
-    wsNoProjectBody: 'لا يحتوي مساحة العمل هذه على أي مشروع يمكن لحسابك استخدامه. أي منظمة ومشروع أولي يُنشآن هنا سيكونان مملوكين لحسابك. المنظمات الموجودة غير متاحة عبر هذه التهيئة.',
+    wsNoProjectBody:
+      'لا يحتوي مساحة العمل هذه على أي مشروع يمكن لحسابك استخدامه. أي منظمة ومشروع أولي يُنشآن هنا سيكونان مملوكين لحسابك. المنظمات الموجودة غير متاحة عبر هذه التهيئة.',
     wsOrganizationName: 'اسم المنظمة',
     wsOrganizationSlug: 'المعرّف المختصر للمنظمة',
     wsProjectName: 'اسم المشروع الأولي',
@@ -611,17 +674,23 @@ export const messages = {
     wsWorkspaceInitFailed: 'تعذّرت تهيئة مساحة العمل.',
     wsProjects: 'المشاريع',
     wsProfiles: 'الملفات',
-    wsNoProfilesBody: 'لا يتوفر بعد أي سجل ملف في هذا المشروع. أنشئ واحدًا أدناه. الملفات هي سجلات لإعدادات النموذج تُستخدم في الحساب.',
+    wsNoProfilesBody:
+      'لا يتوفر بعد أي سجل ملف في هذا المشروع. أنشئ واحدًا أدناه. الملفات هي سجلات لإعدادات النموذج تُستخدم في الحساب.',
     wsExternalReference: 'المرجع الخارجي',
     wsProjectLabel: 'المشروع',
     wsProfileLabel: 'الملف',
     wsNoProfileSelectedHeading: 'لم يتم تحديد أي ملف',
-    wsNoProfileSelectedBody: 'حدّد ملفًا أعلاه لحساب الحالات الحاسوبية الخاصة به وقراءتها.',
+    wsNoProfileSelectedBody:
+      'حدّد ملفًا أعلاه لحساب الحالات الحاسوبية الخاصة به وقراءتها.',
     wsLatestHeading: 'أحدث حالة حاسوبية',
     wsRefreshState: 'تحديث الحالة',
     wsReading: 'جارٍ القراءة…',
     wsLatestEmpty: 'لم تُحسب أي حالة حاسوبية لهذا الملف بعد.',
     wsLatestError: 'تعذّرت قراءة أحدث حالة.',
+    wsHistoryHeading: 'سجل الحالات',
+    wsHistoryEmpty: 'لم تُسجّل أي حالات حاسوبية لهذا الملف.',
+    wsHistoryError: 'تعذّرت قراءة سجل الحالات. حاول مرة أخرى.',
+    wsHistoryRetry: 'إعادة محاولة قراءة السجل',
     wsEmotionVector: 'المتجه العاطفي',
     wsDimensions: 'الأبعاد',
     wsModelIdentity: 'هوية النموذج',
@@ -655,8 +724,10 @@ export const messages = {
     wsEvent: 'الحدث',
     wsState: 'الحالة',
     wsCreateProfile: 'إنشاء ملف',
-    wsCreateProfileIntro: 'الملف سجل لإعدادات النموذج يُستخدم في الحساب. أنشئ ملفًا لهذا المشروع أدناه.',
-    wsExternalReferenceHint: 'من 1 إلى 128 محرفًا قابلًا للطباعة، وفريد ضمن هذا المشروع.',
+    wsCreateProfileIntro:
+      'الملف سجل لإعدادات النموذج يُستخدم في الحساب. أنشئ ملفًا لهذا المشروع أدناه.',
+    wsExternalReferenceHint:
+      'من 1 إلى 128 محرفًا قابلًا للطباعة، وفريد ضمن هذا المشروع.',
     wsModelConfiguration: 'إعدادات النموذج',
     wsFieldEmotionalSensitivity: 'الحساسية العاطفية (من 0 إلى 1)',
     wsFieldBaselineTrust: 'الثقة الأساسية (من 0 إلى 1)',
@@ -665,18 +736,21 @@ export const messages = {
     wsFieldNostalgiaSensitivity: 'الحساسية للحنين (من 0 إلى 1)',
     wsFieldJealousySensitivity: 'الحساسية للغيرة (من 0 إلى 1)',
     wsAdditionalTraits: 'سمات إضافية (كائن JSON اختياري)',
-    wsAdditionalTraitsHint: 'بيانات وصفية فقط؛ ولا تستهلكها الديناميكيات الحتمية أبدًا.',
+    wsAdditionalTraitsHint:
+      'بيانات وصفية فقط؛ ولا تستهلكها الديناميكيات الحتمية أبدًا.',
     wsCreateProfileAction: 'إنشاء الملف',
     wsCreatingProfile: 'جارٍ الإنشاء…',
     wsExtRefLength: 'يجب أن يتراوح طول المرجع الخارجي بين 1 و128 محرفًا.',
-    wsExtRefPrintable: 'يجوز أن يحتوي المرجع الخارجي على محارف قابلة للطباعة فقط.',
+    wsExtRefPrintable:
+      'يجوز أن يحتوي المرجع الخارجي على محارف قابلة للطباعة فقط.',
     wsTraitsObject: 'يجب أن تكون السمات الإضافية كائن JSON.',
     wsProfileCreateFailed: 'تعذّر إنشاء الملف.',
     wsProfileErrorUnauthenticated: 'انتهت صلاحية جلستك. سجّل الدخول مرة أخرى.',
     wsProfileErrorForbidden: 'لا تملك صلاحية إنشاء ملفات في هذا المشروع.',
     wsProfileErrorInvalidInput: 'طلب إنشاء الملف غير صالح.',
     wsProfileErrorInvalidContentType: 'تنسيق طلب الملف غير مدعوم.',
-    wsProfileErrorExternalReferenceConflict: 'يوجد بالفعل ملف بهذه المرجعية الخارجية في هذا المشروع.',
+    wsProfileErrorExternalReferenceConflict:
+      'يوجد بالفعل ملف بهذه المرجعية الخارجية في هذا المشروع.',
     wsProfileCreated: 'تم إنشاء الملف.',
     wsCreatedAt: 'أُنشئ في',
     wsReloadWorkspace: 'أعد تحميل مساحة العمل لرؤية الملف الجديد.',

@@ -30,15 +30,14 @@ function readAppSource(relativePath: string): string {
 
 /** Source with comments removed, so scans target user-facing code only. */
 function stripComments(source: string): string {
-  return source
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .replace(/\/\/[^\n]*/g, '');
+  return source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
 }
 
 /** Client presentation surfaces that render the scientific disclosure. */
 const DISCLOSURE_SURFACES = [
   'shell/overview-page.tsx',
   'latest-state-panel.tsx',
+  'state-history-panel.tsx',
   'transition-form.tsx',
   'profile-onboarding-form.tsx',
 ] as const;
@@ -47,6 +46,7 @@ const DISCLOSURE_SURFACES = [
 const WORKSPACE_SURFACES = [
   'workspace-view.tsx',
   'latest-state-panel.tsx',
+  'state-history-panel.tsx',
   'transition-form.tsx',
   'profile-onboarding-form.tsx',
   'bootstrap-form.tsx',
@@ -54,7 +54,7 @@ const WORKSPACE_SURFACES = [
 ] as const;
 
 const FR_DISCLOSURE =
-  "Le résultat d’EMORA est un état émotionnel calculé et estimé par un modèle, dérivé de l’événement et du contexte que vous avez fournis, à l’aide du modèle déterministe d’EMORA. Il ne constitue pas une mesure de l’état émotionnel réel d’une personne. Il ne constitue pas une détection de l’état émotionnel réel d’une personne. Il ne s’agit pas d’un diagnostic. Il ne s’agit pas d’une évaluation clinique. Il n’établit pas la validité psychologique et ne doit pas être utilisé comme preuve de ce qu’une personne ressent réellement.";
+  'Le résultat d’EMORA est un état émotionnel calculé et estimé par un modèle, dérivé de l’événement et du contexte que vous avez fournis, à l’aide du modèle déterministe d’EMORA. Il ne constitue pas une mesure de l’état émotionnel réel d’une personne. Il ne constitue pas une détection de l’état émotionnel réel d’une personne. Il ne s’agit pas d’un diagnostic. Il ne s’agit pas d’une évaluation clinique. Il n’établit pas la validité psychologique et ne doit pas être utilisé comme preuve de ce qu’une personne ressent réellement.';
 
 const AR_DISCLOSURE =
   'مخرَج EMORA هو حالة عاطفية حاسوبية مقدّرة بواسطة نموذج، مشتقة من الحدث والسياق اللذين قدّمتهما، باستخدام نموذج EMORA الحتمي. ولا تمثّل هذه الحالة قياسًا للحالة العاطفية الحقيقية لشخص. كما أنها ليست كشفًا عن الحالة العاطفية الحقيقية لشخص. وليست تشخيصًا. وليست تقييمًا سريريًا. ولا تثبت الصلاحية النفسية، ولا يجوز استخدامها دليلًا على ما يشعر به الشخص فعليًا.';
@@ -67,9 +67,7 @@ describe('M0 multilingual presentation: translation dictionary', () => {
       expect(Object.keys(messages[locale]).sort()).toEqual(enKeys);
       for (const [key, value] of Object.entries(messages[locale])) {
         expect(typeof value).toBe('string');
-        expect((value as string).length, `${locale}/${key}`).toBeGreaterThan(
-          0,
-        );
+        expect((value as string).length, `${locale}/${key}`).toBeGreaterThan(0);
       }
     }
   });
@@ -247,9 +245,7 @@ describe('M0 multilingual presentation: accessibility labels (F-8)', () => {
     for (const surface of [...DISCLOSURE_SURFACES, 'workspace-view.tsx']) {
       const source = readAppSource(surface);
       expect(source).not.toContain('aria-label="Scientific disclosure"');
-      expect(source).not.toContain(
-        'aria-label="Profile identity disclosure"',
-      );
+      expect(source).not.toContain('aria-label="Profile identity disclosure"');
     }
   });
 });
@@ -321,9 +317,10 @@ describe('M0 multilingual presentation: /app string coverage (G)', () => {
         'psychological assessment of a person',
         'No profile record is available',
       ]) {
-        expect(source, `${forbidden} bypasses translation in ${surface}`).not.toContain(
-          forbidden,
-        );
+        expect(
+          source,
+          `${forbidden} bypasses translation in ${surface}`,
+        ).not.toContain(forbidden);
       }
       // Headings that previously bypassed the dictionary (single words).
       expect(source).not.toMatch(/>\s*Projects\s*</);
@@ -351,6 +348,27 @@ describe('M0 multilingual presentation: /app string coverage (G)', () => {
     );
     expect(messages.en.wsProjects).toBe('Projects');
     expect(messages.en.wsProfiles).toBe('Profiles');
+  });
+
+  it('provides state-history messages in EN/FR/AR and uses them on the panel', () => {
+    for (const locale of LOCALES) {
+      expect(messages[locale].wsHistoryHeading.length).toBeGreaterThan(0);
+      expect(messages[locale].wsHistoryEmpty.length).toBeGreaterThan(0);
+      expect(messages[locale].wsHistoryError.length).toBeGreaterThan(0);
+      expect(messages[locale].wsHistoryRetry.length).toBeGreaterThan(0);
+    }
+
+    expect(messages.fr.wsHistoryHeading).not.toBe(messages.en.wsHistoryHeading);
+    expect(messages.ar.wsHistoryHeading).not.toBe(messages.en.wsHistoryHeading);
+    const panel = readAppSource('state-history-panel.tsx');
+    expect(panel).toContain("t('wsHistoryHeading')");
+    expect(panel).toContain("t('wsHistoryEmpty')");
+    expect(panel).toContain("t('wsHistoryError')");
+    expect(panel).toContain("t('wsHistoryRetry')");
+    expect(panel).toContain("t('disclosureText')");
+    expect(panel).toContain(
+      'value.disclosureText === messages.en.disclosureText',
+    );
   });
 
   it('renders server-derived identity data through the dictionary', () => {
@@ -403,5 +421,3 @@ describe('M0 multilingual presentation: language-invariance boundary', () => {
     expect(workspace).toContain('usePreferences');
   });
 });
-
-
