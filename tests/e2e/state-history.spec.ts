@@ -56,6 +56,11 @@ test('authenticated State History stays scoped, ordered, and localized', async (
 }) => {
   expect(await currentTestDatabaseName()).toBe(TEST_DATABASE_NAME);
 
+  // The serial Product Reality journey runs immediately before this spec and
+  // shares the same localhost IP. Better Auth allows three sign-in/sign-up
+  // requests per IP in a rolling 10-second window, so let that window expire.
+  await page.waitForTimeout(11_000);
+
   let responseMode:
     'normal' | 'delay' | 'malformed' | 'server-error' | 'abort' = 'normal';
   let signalDelayedResponse!: () => void;
