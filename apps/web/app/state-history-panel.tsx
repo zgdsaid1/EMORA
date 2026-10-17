@@ -280,7 +280,7 @@ export function StateHistoryPanel({
             <li key={item.stateId}>
               <article className="workspace-readout">
                 <h3 className="workspace-readout-heading">
-                  {t('wsComputedAt')}{' '}
+                  {t('wsHistoryTimestamp')}{' '}
                   <time dateTime={item.timestamp}>{item.timestamp}</time>
                 </h3>
 

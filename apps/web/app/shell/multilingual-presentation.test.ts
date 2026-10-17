@@ -353,6 +353,7 @@ describe('M0 multilingual presentation: /app string coverage (G)', () => {
   it('provides state-history messages in EN/FR/AR and uses them on the panel', () => {
     for (const locale of LOCALES) {
       expect(messages[locale].wsHistoryHeading.length).toBeGreaterThan(0);
+      expect(messages[locale].wsHistoryTimestamp.length).toBeGreaterThan(0);
       expect(messages[locale].wsHistoryEmpty.length).toBeGreaterThan(0);
       expect(messages[locale].wsHistoryError.length).toBeGreaterThan(0);
       expect(messages[locale].wsHistoryRetry.length).toBeGreaterThan(0);
@@ -362,6 +363,7 @@ describe('M0 multilingual presentation: /app string coverage (G)', () => {
     expect(messages.ar.wsHistoryHeading).not.toBe(messages.en.wsHistoryHeading);
     const panel = readAppSource('state-history-panel.tsx');
     expect(panel).toContain("t('wsHistoryHeading')");
+    expect(panel).toContain("t('wsHistoryTimestamp')");
     expect(panel).toContain("t('wsHistoryEmpty')");
     expect(panel).toContain("t('wsHistoryError')");
     expect(panel).toContain("t('wsHistoryRetry')");
